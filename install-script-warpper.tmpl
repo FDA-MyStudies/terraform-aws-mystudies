@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+%{ if debug }
+set -x
+
+export DEBUG=1
+%{ endif }
+
+# bash strict mode
+set -euo pipefail
+
+if ! command -v git 2>&1 >/dev/null; then
+  sudo apt-get update -yqq
+  sudo apt-get install git -yqq
+fi
+
+tmp_dir="$(mktemp -d)"
+
+git clone ${url} "$tmp_dir"
+
+%{ for env_key, env_value in environment }
+export ${env_key}="${env_value}"
+%{ endfor ~}
+
+cd "$tmp_dir"
+
+%{ if branch != null }
+git fetch
+git checkout remote ${branch}
+%{ endif }
+
+%{ if debug }
+env | sort
+%{ endif }
+
+sudo -E ./install-${script_name}.bash
