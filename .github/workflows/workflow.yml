@@ -27,14 +27,6 @@ jobs:
       - name: Terraform Format
         run: terraform fmt -check
 
-      - name: tfsec
-        uses: aquasecurity/tfsec-pr-commenter-action@main
-        with:
-          github_token: ${{ github.GITHUB_TOKEN }}
-
-      - name: Terrascan
-        uses: accurics/terrascan-action@v1.3.0
-
       - uses: terraform-linters/setup-tflint@v1
         name: Setup TFLint
         with:
@@ -45,3 +37,11 @@ jobs:
 
       - name: Run TFLint
         run: tflint -f compact
+
+      - name: tfsec
+        uses: aquasecurity/tfsec-pr-commenter-action@main
+        with:
+          github_token: ${{ github.GITHUB_TOKEN }}
+
+      - name: Terrascan
+        uses: accurics/terrascan-action@v1.3.0
