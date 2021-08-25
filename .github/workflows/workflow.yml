@@ -16,11 +16,6 @@ jobs:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - name: Install unzip
-        run: |
-          apt update  -yqq
-          apt install -yqq unzip
-
       - name: Check Out Code
         uses: actions/checkout@v1
 
