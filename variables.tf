@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+
 variable "debug" {
   type        = bool
   default     = false
@@ -37,24 +38,39 @@ variable "keypair_name" {
   description = "name of existing keypair to use when creating EC2"
 }
 
-# variable "private_subnet_ids" {
-#   type        = list(string)
-#   description = "list of private subnet ids to use when creating vpc"
-# }
+variable "private_subnets" {
+  type        = list(string)
+  description = "list of private subnets to use when creating vpc"
+}
 
-# variable "public_subnet_ids" {
-#   type        = list(string)
-#   description = "list of public subnet ids to use when creating vpc"
-# }
+variable "public_subnets" {
+  type        = list(string)
+  description = "list of public subnets to use when creating vpc"
+}
 
-# variable "azs" {
-#   description = "A list of availability zones in the region"
-#   type        = list(string)
-#   default     = []
-# }
+
+
+/*
+ variable "private_subnet_ids" {
+   type        = list(string)
+   description = "list of private subnet ids to use when creating vpc"
+}
+
+ variable "public_subnet_ids" {
+   type        = list(string)
+   description = "list of public subnet ids to use when creating vpc"
+}
+*/
+
+variable "azs" {
+  description = "A list of availability zones in the region"
+  type        = list(string)
+  default     = []
+}
 
 variable "subnet_id" {
   type        = string
+  default     = null
   description = "subnet to create instances in"
 }
 
@@ -72,5 +88,90 @@ variable "install_script_repo_url" {
 variable "install_script_repo_branch" {
   type        = string
   default     = null
-  description = "(optional) branch of install script repo to chekout"
+  description = "(optional) branch of install script repo to checkout"
 }
+
+variable "formation" {
+  description = "Name of VPC and associated resources, used in config paths"
+}
+
+# might be somewhat redundant with full formation path, that's ok
+variable "formation_type" {
+  description = "production | development"
+}
+
+variable "region" {
+  default = "us-west-2"
+}
+
+variable "vpc_cidr" {
+  type        = string
+  default     = ""
+  description = "cidr block for vpc"
+}
+
+variable "s3_state_bucket" {
+  type        = string
+  default     = ""
+  description = "S3 bucket used to store terraform state"
+}
+
+variable "s3_state_region" {
+  type        = string
+  default     = "us-west-2"
+  description = "region of the S3 state bucket"
+}
+
+variable "bastion_user" {
+  description = "IAM user for logging into the bastion host"
+  default     = "ec2-user"
+}
+
+variable "user" {
+  type        = string
+  default     = ""
+  description = "IAM name of user who last ran this script"
+}
+
+variable "office_cidr_A" {
+  type        = string
+  default     = "199.76.89.158/32"
+  description = "CIDR of authorized office A - used for SSM remote admin access to instances"
+}
+
+variable "office_cidr_B" {
+  type        = string
+  default     = "199.76.89.152/32"
+  description = "CIDR of authorized office B - used for SSM remote admin access to instances"
+}
+
+
+
+// Base Domain used by applications to look-up hosted zone and make DNS records
+variable "base_domain" {
+  default = "lkpoc.labkey.com" //Development domain
+}
+
+
+variable "common_tags" {
+  description = "Set of tags to apply to resources"
+  type        = map(any)
+}
+
+variable "alb_ssl_cert_arn" {
+  type        = string
+  description = "ARN of existing TLS Certificate to use with ALB "
+}
+
+variable "alb_ssl_policy" {
+  # Amazon provided policies can be found:
+  # http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-security-policy-table.html
+  default = "ELBSecurityPolicy-TLS-1-2-2017-01"
+}
+
+
+
+
+
+
+

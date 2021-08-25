@@ -13,3 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+output "vpc_id" {
+  value = module.vpc.vpc_id
+}
+
+output "vpc_arn" {
+  value = module.vpc.vpc_arn
+}
+
+output "vpc_cidr" {
+  value = module.vpc.vpc_cidr_block
+}
+
+output "igw_id" {
+  value = module.vpc.igw_id
+}
+
+output "vpc_alb_arn" {
+  value = module.alb.lb_arn
+}
+
+output "base_domain" {
+  value = var.base_domain
+}
+
