@@ -226,7 +226,7 @@ module "acm" {
 
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
-  version = ">= 6.0.0"
+  version = ">= 6.5.0"
 
   depends_on = [
     module.vpc,
