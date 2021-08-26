@@ -1,4 +1,12 @@
 
+terraform {
+  backend "s3" {
+    bucket = "tf.syseng.labkey.com"
+    key = "mystudies/dev/terraform.tfstate"
+    region = "us-west-2"
+    encrypt = true
+  }
+}
 
 provider "aws" {
   region = local.region
