@@ -38,27 +38,27 @@ jobs:
       - name: Run TFLint
         run: tflint -f compact
 
-  tfsec:
-    name: tfsec
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check Out Code
-        uses: actions/checkout@v1
+  # tfsec:
+  #   name: tfsec
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check Out Code
+  #       uses: actions/checkout@v1
 
-      - name: tfsec
-        uses: tfsec/tfsec-pr-commenter-action@main
-        with:
-          github_token: ${{ github.GITHUB_TOKEN }}
+  #     - name: tfsec
+  #       uses: tfsec/tfsec-pr-commenter-action@main
+  #       with:
+  #         github_token: ${{ github.GITHUB_TOKEN }}
 
-      # - name: tfsec
-      #   uses: tfsec/tfsec-sarif-action@master
-      #   with:
-      #     sarif_file: tfsec.sarif
+  #     - name: tfsec
+  #       uses: tfsec/tfsec-sarif-action@master
+  #       with:
+  #         sarif_file: tfsec.sarif
 
-      # - name: Upload SARIF file
-      #   uses: github/codeql-action/upload-sarif@v1
-      #   with:
-      #     sarif_file: terrascan.sarif
+  #     - name: Upload SARIF file
+  #       uses: github/codeql-action/upload-sarif@v1
+  #       with:
+  #         sarif_file: terrascan.sarif
 
   terrascan:
     name: terrascan
