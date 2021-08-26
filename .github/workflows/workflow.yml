@@ -1,0 +1,81 @@
+name: Terraform CI
+
+on:
+  push:
+    branches:
+      - develop
+
+  pull_request:
+    branches:
+      - develop
+
+  workflow_dispatch:
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.5
+
+      - name: Terraform Format
+        run: terraform fmt -check
+
+      - uses: terraform-linters/setup-tflint@v1
+        name: Setup TFLint
+        with:
+          tflint_version: v0.29.0
+
+      - name: Init TFLint
+        run: tflint --init
+
+      - name: Run TFLint
+        run: tflint -f compact
+
+  # tfsec:
+  #   name: tfsec
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Check Out Code
+  #       uses: actions/checkout@v1
+
+  #     - name: tfsec
+  #       uses: tfsec/tfsec-pr-commenter-action@main
+  #       with:
+  #         github_token: ${{ github.GITHUB_TOKEN }}
+
+  #     - name: tfsec
+  #       uses: tfsec/tfsec-sarif-action@master
+  #       with:
+  #         sarif_file: tfsec.sarif
+
+  #     - name: Upload SARIF file
+  #       uses: github/codeql-action/upload-sarif@v1
+  #       with:
+  #         sarif_file: terrascan.sarif
+
+  terrascan:
+    name: terrascan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v1
+
+      - name: Run Terrascan
+        uses: accurics/terrascan-action@v1.3.0
+        with:
+          iac_type: 'terraform'
+          policy_type: 'aws'
+          verbose: true
+      #     sarif_upload: true
+
+      # - name: Upload SARIF file
+      #   uses: github/codeql-action/upload-sarif@v1
+      #   with:
+      #     sarif_file: terrascan.sarif
