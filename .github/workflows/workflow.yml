@@ -42,6 +42,9 @@ jobs:
     name: tfsec
     runs-on: ubuntu-latest
     steps:
+      - name: Check Out Code
+        uses: actions/checkout@v1
+
       - name: tfsec
         uses: tfsec/tfsec-pr-commenter-action@main
         with:
@@ -61,6 +64,9 @@ jobs:
     name: terrascan
     runs-on: ubuntu-latest
     steps:
+      - name: Check Out Code
+        uses: actions/checkout@v1
+
       - name: Run Terrascan
         uses: accurics/terrascan-action@v1.3.0
         with:
