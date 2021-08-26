@@ -26,7 +26,6 @@ formation_type = "dev"
 
 common_tags = {
   Client   = "labkey"
-  Schedule = ""
 }
 
 s3_state_bucket = "tf.syseng.labkey.com"
