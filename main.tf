@@ -41,9 +41,10 @@ locals {
 
 
 
-  name_prefix = var.formation
-  name_type   = var.formation_type
-  env_dns     = var.base_domain
+  name_prefix        = var.formation
+  name_type          = var.formation_type
+  env_dns            = var.base_domain
+  ssm_parameter_path = "/${var.formation}/${var.formation_type}"
   additional_tags = merge(var.common_tags, tomap({
     Prefix      = local.name_prefix
     Environment = var.formation_type
@@ -60,11 +61,11 @@ locals {
   # values for wcp install script(s)
 }
 
-###
+###############################################################################################
 #
 # Networking
 #
-###
+###############################################################################################
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
@@ -132,7 +133,11 @@ module "endpoints" {
   tags = local.additional_tags
 }
 
+###############################################################################################
+#
 # Security Groups
+#
+###############################################################################################
 
 module "lb_http_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/http-80"
@@ -230,10 +235,10 @@ module "registration_psql_sg" {
   ingress_cidr_blocks = var.private_subnets
 
   tags = merge(
-  local.additional_tags,
-  {
-    Name = "${local.name_prefix}-registration-psql-sg"
-  },
+    local.additional_tags,
+    {
+      Name = "${local.name_prefix}-registration-psql-sg"
+    },
   )
 }
 
@@ -250,10 +255,10 @@ module "wcp_mysql_sg" {
   ingress_cidr_blocks = var.private_subnets
 
   tags = merge(
-  local.additional_tags,
-  {
-    Name = "${local.name_prefix}-wcp_mysql_sg"
-  },
+    local.additional_tags,
+    {
+      Name = "${local.name_prefix}-wcp_mysql_sg"
+    },
   )
 }
 
@@ -287,7 +292,7 @@ module "acm" {
 
 
 
-
+# Application Load Balancer
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = ">= 6.5.0"
@@ -351,6 +356,70 @@ resource "aws_alb_listener" "alb_https_listener" {
 
 ###############################################################################################
 #
+# Secrets Management
+#
+###############################################################################################
+
+resource "aws_kms_key" "env_kms_key" {
+  description             = "KMS Encryption Key Used for Secrets Management"
+  deletion_window_in_days = 30
+  enable_key_rotation     = true
+  tags                    = local.additional_tags
+}
+
+resource "random_password" "resp_database_password" {
+  length      = 32
+  min_lower   = 3
+  min_upper   = 3
+  min_numeric = 3
+  min_special = 1
+}
+
+resource "aws_ssm_parameter" "resp_database_password" {
+  name   = "${local.ssm_parameter_path}/db/resp_db_password"
+  type   = "SecureString"
+  value  = random_password.resp_database_password.result
+  key_id = aws_kms_key.env_kms_key.id
+}
+
+resource "random_password" "reg_database_password" {
+  length      = 32
+  min_lower   = 3
+  min_upper   = 3
+  min_numeric = 3
+  min_special = 1
+}
+
+resource "aws_ssm_parameter" "reg_database_password" {
+  name   = "${local.ssm_parameter_path}/db/reg_db_password"
+  type   = "SecureString"
+  value  = random_password.reg_database_password.result
+  key_id = aws_kms_key.env_kms_key.id
+}
+
+# Mysql max password length is 32
+resource "random_password" "wcp_database_password" {
+  length      = 30
+  min_lower   = 3
+  min_upper   = 3
+  min_numeric = 3
+  min_special = 1
+}
+
+resource "aws_ssm_parameter" "wcp_database_password" {
+  name   = "${local.ssm_parameter_path}/db/wcp_db_password"
+  type   = "SecureString"
+  value  = random_password.wcp_database_password.result
+  key_id = aws_kms_key.env_kms_key.id
+}
+
+
+
+
+
+
+###############################################################################################
+#
 # RDS Deployments
 #
 ###############################################################################################
@@ -362,11 +431,11 @@ resource "aws_alb_listener" "alb_https_listener" {
 #   security_groups = local.create_sg ? [module.ssh_sg.security_group_id] : var.security_groups
 # }
 
-###
+###############################################################################################
 #
 # Server EC2 instances
 #
-###
+###############################################################################################
 
 # find the latest Ubuntu AMI for use in aws_instances below
 data "aws_ami" "ubuntu" {
