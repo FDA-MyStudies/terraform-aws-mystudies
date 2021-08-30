@@ -25,9 +25,20 @@ formation = "mystudies"
 formation_type = "dev"
 
 common_tags = {
-  Client   = "labkey"
+  Client = "labkey"
 }
 
 s3_state_bucket = "tf.syseng.labkey.com"
 
 s3_state_region = "us-west-2"
+
+# Deploy Response RDS DB Instance
+response_use_rds = true
+
+# Deploy Registration RDS DB Instance
+registration_use_rds = true
+
+# Deploy WCP RDS DB Instance
+wcp_use_rds = true
+
+

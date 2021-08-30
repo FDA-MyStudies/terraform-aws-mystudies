@@ -1,9 +1,9 @@
 
 terraform {
   backend "s3" {
-    bucket = "tf.syseng.labkey.com"
-    key = "mystudies/dev/terraform.tfstate"
-    region = "us-west-2"
+    bucket  = "tf.syseng.labkey.com"
+    key     = "mystudies/dev/terraform.tfstate"
+    region  = "us-west-2"
     encrypt = true
   }
 }
@@ -40,5 +40,9 @@ module "mystudies" {
   office_cidr_B      = var.office_cidr_B
   alb_ssl_cert_arn   = var.alb_ssl_cert_arn
   alb_ssl_policy     = var.alb_ssl_policy
+
+  response_use_rds     = var.response_use_rds
+  registration_use_rds = var.registration_use_rds
+  wcp_use_rds          = var.wcp_use_rds
 
 }

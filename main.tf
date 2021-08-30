@@ -132,6 +132,8 @@ module "endpoints" {
   tags = local.additional_tags
 }
 
+# Security Groups
+
 module "lb_http_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/http-80"
   version = ">= 4.3.0"
@@ -193,6 +195,68 @@ module "office_ssh_sg" {
     },
   )
 }
+
+
+module "response_psql_sg" {
+  source  = "terraform-aws-modules/security-group/aws//modules/postgresql"
+  version = "~> 4.3.0"
+
+  create = var.response_use_rds
+  name   = "${local.name_prefix}-response-psql-sg"
+  vpc_id = module.vpc.vpc_id
+
+  description = "Security group for Response Server RDS Instance"
+
+  ingress_cidr_blocks = var.private_subnets
+
+  tags = merge(
+    local.additional_tags,
+    {
+      Name = "${local.name_prefix}-response-psql-sg"
+    },
+  )
+}
+
+module "registration_psql_sg" {
+  source  = "terraform-aws-modules/security-group/aws//modules/postgresql"
+  version = "~> 4.3.0"
+
+  create = var.registration_use_rds
+  name   = "${local.name_prefix}-registration-psql-sg"
+  vpc_id = module.vpc.vpc_id
+
+  description = "Security group for Registration Server RDS Instance"
+
+  ingress_cidr_blocks = var.private_subnets
+
+  tags = merge(
+  local.additional_tags,
+  {
+    Name = "${local.name_prefix}-registration-psql-sg"
+  },
+  )
+}
+
+module "wcp_mysql_sg" {
+  source  = "terraform-aws-modules/security-group/aws//modules/mysql"
+  version = "~> 4.3.0"
+
+  create = var.wcp_use_rds
+  name   = "${local.name_prefix}-wcp_mysql_sg"
+  vpc_id = module.vpc.vpc_id
+
+  description = "Security group for WCP Server RDS Instance"
+
+  ingress_cidr_blocks = var.private_subnets
+
+  tags = merge(
+  local.additional_tags,
+  {
+    Name = "${local.name_prefix}-wcp_mysql_sg"
+  },
+  )
+}
+
 
 
 # use existing DNS Zone provided by var.base.domain
@@ -283,6 +347,15 @@ resource "aws_alb_listener" "alb_https_listener" {
     type             = "forward"
   }
 }
+
+
+###############################################################################################
+#
+# RDS Deployments
+#
+###############################################################################################
+
+
 
 
 # locals {

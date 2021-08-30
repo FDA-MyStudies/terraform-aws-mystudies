@@ -169,6 +169,24 @@ variable "alb_ssl_policy" {
   default = "ELBSecurityPolicy-TLS-1-2-2017-01"
 }
 
+variable "response_use_rds" {
+  type        = bool
+  default     = false
+  description = "Bool to determine use of RDS for Response Server Database"
+}
+
+variable "registration_use_rds" {
+  type        = bool
+  default     = false
+  description = "Bool to determine use of RDS for Registration Server Database"
+}
+
+variable "wcp_use_rds" {
+  type        = bool
+  default     = false
+  description = "Bool to determine use of RDS for WCP Server Database"
+}
+
 
 
 
