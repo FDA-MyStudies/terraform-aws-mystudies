@@ -38,3 +38,17 @@ output "base_domain" {
   value = var.base_domain
 }
 
+output "resp_db_password" {
+  value = module.mystudies.resp_db_password
+  sensitive = true
+}
+
+output "reg_db_password" {
+  value = module.mystudies.reg_db_password
+  sensitive = true
+}
+
+output "wcp_db_password" {
+  value = module.mystudies.wcp_db_password
+  sensitive = true
+}
