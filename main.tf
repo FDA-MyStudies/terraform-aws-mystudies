@@ -356,7 +356,7 @@ resource "aws_instance" "response" {
   provisioner "remote-exec" {
     inline = [
       templatefile(
-        "${path.module}/install-script-warpper.tmpl",
+        "${path.module}/install-script-wrapper.tmpl",
         {
           script_name = "labkey"
           debug       = var.debug
