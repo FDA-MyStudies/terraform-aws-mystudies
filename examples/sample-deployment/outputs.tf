@@ -39,16 +39,26 @@ output "base_domain" {
 }
 
 output "resp_db_password" {
-  value = module.mystudies.resp_db_password
+  value     = module.mystudies.resp_db_password
   sensitive = true
 }
 
 output "reg_db_password" {
-  value = module.mystudies.reg_db_password
+  value     = module.mystudies.reg_db_password
   sensitive = true
 }
 
 output "wcp_db_password" {
-  value = module.mystudies.wcp_db_password
+  value     = module.mystudies.wcp_db_password
+  sensitive = true
+}
+
+output "resp_mek" {
+  value     = module.mystudies.resp_mek
+  sensitive = true
+}
+
+output "reg_mek" {
+  value     = module.mystudies.reg_mek
   sensitive = true
 }

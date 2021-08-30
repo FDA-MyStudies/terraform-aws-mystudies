@@ -383,6 +383,23 @@ resource "aws_ssm_parameter" "resp_database_password" {
   tags   = local.additional_tags
 }
 
+# Generate Response LabKey Master Encryption Key (MEK)
+resource "random_password" "resp_mek" {
+  length      = 32
+  min_lower   = 3
+  min_upper   = 3
+  min_numeric = 3
+  min_special = 0
+}
+
+resource "aws_ssm_parameter" "resp_mek" {
+  name   = "${local.ssm_parameter_path}/mek/resp_mek"
+  type   = "SecureString"
+  value  = random_password.resp_mek.result
+  key_id = aws_kms_key.env_kms_key.id
+  tags   = local.additional_tags
+}
+
 resource "random_password" "reg_database_password" {
   length      = 32
   min_lower   = 3
@@ -398,6 +415,24 @@ resource "aws_ssm_parameter" "reg_database_password" {
   key_id = aws_kms_key.env_kms_key.id
   tags   = local.additional_tags
 }
+
+# Generate Registration LabKey Master Encryption Key (MEK)
+resource "random_password" "reg_mek" {
+  length      = 32
+  min_lower   = 3
+  min_upper   = 3
+  min_numeric = 3
+  min_special = 0
+}
+
+resource "aws_ssm_parameter" "reg_mek" {
+  name   = "${local.ssm_parameter_path}/mek/reg_mek"
+  type   = "SecureString"
+  value  = random_password.reg_mek.result
+  key_id = aws_kms_key.env_kms_key.id
+  tags   = local.additional_tags
+}
+
 
 # Mysql max password length is 32
 resource "random_password" "wcp_database_password" {

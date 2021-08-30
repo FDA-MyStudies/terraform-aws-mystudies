@@ -39,16 +39,26 @@ output "base_domain" {
 }
 
 output "resp_db_password" {
-  value = random_password.resp_database_password.result
+  value     = random_password.resp_database_password.result
   sensitive = true
 }
 
 output "reg_db_password" {
-  value = random_password.reg_database_password.result
+  value     = random_password.reg_database_password.result
   sensitive = true
 }
 
 output "wcp_db_password" {
-  value = random_password.wcp_database_password.result
+  value     = random_password.wcp_database_password.result
+  sensitive = true
+}
+
+output "resp_mek" {
+  value     = random_password.resp_mek.result
+  sensitive = true
+}
+
+output "reg_mek" {
+  value     = random_password.reg_mek.result
   sensitive = true
 }
