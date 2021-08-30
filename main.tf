@@ -380,6 +380,7 @@ resource "aws_ssm_parameter" "resp_database_password" {
   type   = "SecureString"
   value  = random_password.resp_database_password.result
   key_id = aws_kms_key.env_kms_key.id
+  tags   = local.additional_tags
 }
 
 resource "random_password" "reg_database_password" {
@@ -395,6 +396,7 @@ resource "aws_ssm_parameter" "reg_database_password" {
   type   = "SecureString"
   value  = random_password.reg_database_password.result
   key_id = aws_kms_key.env_kms_key.id
+  tags   = local.additional_tags
 }
 
 # Mysql max password length is 32
@@ -411,6 +413,7 @@ resource "aws_ssm_parameter" "wcp_database_password" {
   type   = "SecureString"
   value  = random_password.wcp_database_password.result
   key_id = aws_kms_key.env_kms_key.id
+  tags   = local.additional_tags
 }
 
 
