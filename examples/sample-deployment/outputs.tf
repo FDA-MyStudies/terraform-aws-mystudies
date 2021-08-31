@@ -77,7 +77,7 @@ output "resp_db_id" {
   value = module.mystudies.resp_db_id
 }
 
-output "res_db_az" {
+output "resp_db_az" {
   value = module.mystudies.resp_db_az
 }
 

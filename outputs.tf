@@ -57,7 +57,7 @@ output "resp_db_az" {
 }
 
 output "resp_db_sg_id" {
-  value = module.response_psql_sg
+  value = module.response_psql_sg.security_group_id
 }
 
 output "reg_db_password" {
