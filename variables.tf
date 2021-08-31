@@ -43,12 +43,15 @@ variable "private_subnets" {
   description = "list of private subnets to use when creating vpc"
 }
 
+variable "database_subnets" {
+  type        = list(string)
+  description = "list of database subnets to use when creating vpc"
+}
+
 variable "public_subnets" {
   type        = list(string)
   description = "list of public subnets to use when creating vpc"
 }
-
-
 
 /*
  variable "private_subnet_ids" {

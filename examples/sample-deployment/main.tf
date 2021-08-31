@@ -34,6 +34,7 @@ module "mystudies" {
   formation_type     = var.formation_type
   common_tags        = var.common_tags
   public_subnets     = var.public_subnets
+  database_subnets   = var.database_subnets
   private_subnets    = var.private_subnets
   vpc_cidr           = var.vpc_cidr
   office_cidr_A      = var.office_cidr_A

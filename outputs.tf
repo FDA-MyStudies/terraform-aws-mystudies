@@ -70,6 +70,19 @@ output "registration_rds_master_pass" {
   sensitive = true
 }
 
+output "registration_db_id" {
+  value = module.registration_db.db_instance_id
+}
+
+output "registration_db_az" {
+  value = module.registration_db.db_instance_availability_zone
+}
+
+output "registration_db_sg_id" {
+  value = module.registration_psql_sg.security_group_id
+}
+
+
 output "wcp_db_password" {
   value     = random_password.wcp_database_password.result
   sensitive = true

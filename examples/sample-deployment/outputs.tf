@@ -38,22 +38,22 @@ output "base_domain" {
   value = var.base_domain
 }
 
-output "resp_db_password" {
+output "response_db_password" {
   value     = module.mystudies.response_db_password
   sensitive = true
 }
 
-output "resp_rds_master_pass" {
+output "response_rds_master_pass" {
   value     = module.mystudies.response_rds_master_pass
   sensitive = true
 }
 
-output "reg_db_password" {
+output "registration_db_password" {
   value     = module.mystudies.registration_db_password
   sensitive = true
 }
 
-output "reg_rds_master_pass" {
+output "registration_rds_master_pass" {
   value     = module.mystudies.registration_rds_master_pass
   sensitive = true
 }
@@ -63,24 +63,36 @@ output "wcp_db_password" {
   sensitive = true
 }
 
-output "resp_mek" {
+output "response_mek" {
   value     = module.mystudies.response_mek
   sensitive = true
 }
 
-output "reg_mek" {
+output "registration_mek" {
   value     = module.mystudies.registration_mek
   sensitive = true
 }
 
-output "resp_db_id" {
+output "response_db_id" {
   value = module.mystudies.response_db_id
 }
 
-output "resp_db_az" {
+output "response_db_az" {
   value = module.mystudies.response_db_az
 }
 
-output "resp_db_sg_id" {
+output "response_db_sg_id" {
   value = module.mystudies.response_db_sg_id
+}
+
+output "registration_db_id" {
+  value = module.mystudies.registration_db_id
+}
+
+output "registration_db_az" {
+  value = module.mystudies.registration_db_az
+}
+
+output "registration_db_sg_id" {
+  value = module.mystudies.registration_db_sg_id
 }

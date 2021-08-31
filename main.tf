@@ -82,8 +82,9 @@ module "vpc" {
     data.aws_availability_zones.available.names[2],
   ]
 
-  private_subnets = var.private_subnets
-  public_subnets  = var.public_subnets
+  private_subnets  = var.private_subnets
+  database_subnets = var.database_subnets
+  public_subnets   = var.public_subnets
 
   enable_nat_gateway = true
   single_nat_gateway = true
@@ -407,7 +408,7 @@ resource "random_password" "response_mek" {
   min_lower   = 3
   min_upper   = 3
   min_numeric = 3
-  special = false
+  special     = false
 }
 
 resource "aws_ssm_parameter" "response_mek" {
@@ -456,7 +457,7 @@ resource "random_password" "registration_mek" {
   min_lower   = 3
   min_upper   = 3
   min_numeric = 3
-  special = false
+  special     = false
 }
 
 resource "aws_ssm_parameter" "registration_mek" {
@@ -498,14 +499,15 @@ resource "aws_ssm_parameter" "wcp_database_password" {
 
 # Response Server RDS Database Instance
 module "response_db" {
-  source                    = "terraform-aws-modules/rds/aws"
-  version                   = "~> 3.3.0"
+  source  = "terraform-aws-modules/rds/aws"
+  version = "~> 3.3.0"
 
   create_db_instance = var.response_use_rds
 
   identifier                = "${var.formation}-${var.formation_type}-resp"
   create_db_option_group    = false
   create_db_parameter_group = false
+  create_db_subnet_group    = false
   engine                    = "postgres"
   engine_version            = "11.12"
   family                    = "postgres11" # DB parameter group
@@ -521,7 +523,7 @@ module "response_db" {
 
   multi_az               = false
   vpc_security_group_ids = [module.response_psql_sg.security_group_id]
-  subnet_ids = module.vpc.private_subnets
+  subnet_ids             = module.vpc.database_subnets
 
   backup_retention_period = 35
   skip_final_snapshot     = true
@@ -536,14 +538,15 @@ module "response_db" {
 
 # Registration Server RDS Database Instance
 module "registration_db" {
-  source                    = "terraform-aws-modules/rds/aws"
-  version                   = "~> 3.3.0"
+  source  = "terraform-aws-modules/rds/aws"
+  version = "~> 3.3.0"
 
   create_db_instance = var.registration_use_rds
 
   identifier                = "${var.formation}-${var.formation_type}-reg"
   create_db_option_group    = false
   create_db_parameter_group = false
+  create_db_subnet_group    = false
   engine                    = "postgres"
   engine_version            = "11.12"
   family                    = "postgres11" # DB parameter group
@@ -559,7 +562,7 @@ module "registration_db" {
 
   multi_az               = false
   vpc_security_group_ids = [module.registration_psql_sg.security_group_id]
-  subnet_ids = module.vpc.private_subnets
+  subnet_ids             = module.vpc.database_subnets
 
   backup_retention_period = 35
   skip_final_snapshot     = true
