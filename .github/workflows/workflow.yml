@@ -18,8 +18,8 @@ jobs:
     steps:
       - name: Check Out Code
         uses: actions/checkout@v2
-        # with:
-        #   ref: ${{ github.event.pull_request.head.ref }}
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Generate Module Docs
         uses: terraform-docs/gh-actions@v0.10.0
