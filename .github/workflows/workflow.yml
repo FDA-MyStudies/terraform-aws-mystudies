@@ -27,12 +27,14 @@ jobs:
           working-dir: .
           output-file: README.md
           output-method: inject
+          git-push: true
 
-      # - name: Generate Example Module Docs
-      #   uses: terraform-docs/gh-actions@v0.10.0
-      #   with:
-      #     working-dir: examples/sample-deployment
-      #     output-file: examples/sample-deployment/README.md
+      - name: Generate Example Module Docs
+        uses: terraform-docs/gh-actions@v0.10.0
+        with:
+          working-dir: examples/sample-deployment
+          output-file: examples/sample-deployment/README.md
+          git-push: true
 
   lint:
     name: lint
