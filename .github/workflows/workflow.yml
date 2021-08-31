@@ -26,7 +26,6 @@ jobs:
         with:
           working-dir: .
           output-file: README.md
-          output-method: inject
           git-push: true
 
       - name: Generate Example Module Docs
