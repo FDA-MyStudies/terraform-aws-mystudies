@@ -43,8 +43,18 @@ output "resp_db_password" {
   sensitive = true
 }
 
+output "resp_rds_master_pass" {
+  value     = module.mystudies.resp_rds_master_pass
+  sensitive = true
+}
+
 output "reg_db_password" {
   value     = module.mystudies.reg_db_password
+  sensitive = true
+}
+
+output "reg_rds_master_pass" {
+  value     = module.mystudies.reg_rds_master_pass
   sensitive = true
 }
 
@@ -61,4 +71,16 @@ output "resp_mek" {
 output "reg_mek" {
   value     = module.mystudies.reg_mek
   sensitive = true
+}
+
+output "resp_db_id" {
+  value = module.mystudies.resp_db_id
+}
+
+output "res_db_az" {
+  value = module.mystudies.resp_db_az
+}
+
+output "resp_db_sg_id" {
+  value = module.mystudies.resp_db_sg_id
 }

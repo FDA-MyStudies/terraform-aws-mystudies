@@ -33,7 +33,7 @@ s3_state_bucket = "tf.syseng.labkey.com"
 s3_state_region = "us-west-2"
 
 # Deploy Response RDS DB Instance
-response_use_rds = true
+response_use_rds = false
 
 # Deploy Registration RDS DB Instance
 registration_use_rds = true

@@ -43,8 +43,30 @@ output "resp_db_password" {
   sensitive = true
 }
 
+output "resp_rds_master_pass" {
+  value     = random_password.resp_rds_master_pass.result
+  sensitive = true
+}
+
+output "resp_db_id" {
+  value = module.resp_db.db_instance_id
+}
+
+output "resp_db_az" {
+  value = module.resp_db.db_instance_availability_zone
+}
+
+output "resp_db_sg_id" {
+  value = module.response_psql_sg
+}
+
 output "reg_db_password" {
   value     = random_password.reg_database_password.result
+  sensitive = true
+}
+
+output "reg_rds_master_pass" {
+  value     = random_password.reg_rds_master_pass.result
   sensitive = true
 }
 

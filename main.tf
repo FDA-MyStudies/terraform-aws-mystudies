@@ -204,7 +204,7 @@ module "office_ssh_sg" {
 
 module "response_psql_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/postgresql"
-  version = "~> 4.3.0"
+  version = ">= 4.3.0"
 
   create = var.response_use_rds
   name   = "${local.name_prefix}-response-psql-sg"
@@ -224,7 +224,7 @@ module "response_psql_sg" {
 
 module "registration_psql_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/postgresql"
-  version = "~> 4.3.0"
+  version = ">= 4.3.0"
 
   create = var.registration_use_rds
   name   = "${local.name_prefix}-registration-psql-sg"
@@ -244,7 +244,7 @@ module "registration_psql_sg" {
 
 module "wcp_mysql_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/mysql"
-  version = "~> 4.3.0"
+  version = ">= 4.3.0"
 
   create = var.wcp_use_rds
   name   = "${local.name_prefix}-wcp_mysql_sg"
@@ -383,19 +383,53 @@ resource "aws_ssm_parameter" "resp_database_password" {
   tags   = local.additional_tags
 }
 
+resource "random_password" "resp_rds_master_pass" {
+  length      = 32
+  min_lower   = 3
+  min_upper   = 3
+  min_numeric = 3
+  min_special = 1
+}
+
+resource "aws_ssm_parameter" "resp_rds_master_pass" {
+  name   = "${local.ssm_parameter_path}/db/resp_rds_master_pass"
+  type   = "SecureString"
+  value  = random_password.resp_rds_master_pass.result
+  key_id = aws_kms_key.env_kms_key.id
+  tags   = local.additional_tags
+}
+
+
+
 # Generate Response LabKey Master Encryption Key (MEK)
 resource "random_password" "resp_mek" {
   length      = 32
   min_lower   = 3
   min_upper   = 3
   min_numeric = 3
-  min_special = 0
+  special = false
 }
 
 resource "aws_ssm_parameter" "resp_mek" {
   name   = "${local.ssm_parameter_path}/mek/resp_mek"
   type   = "SecureString"
   value  = random_password.resp_mek.result
+  key_id = aws_kms_key.env_kms_key.id
+  tags   = local.additional_tags
+}
+
+resource "random_password" "reg_rds_master_pass" {
+  length      = 32
+  min_lower   = 3
+  min_upper   = 3
+  min_numeric = 3
+  min_special = 1
+}
+
+resource "aws_ssm_parameter" "reg_rds_master_pass" {
+  name   = "${local.ssm_parameter_path}/db/reg_rds_master_pass"
+  type   = "SecureString"
+  value  = random_password.reg_rds_master_pass.result
   key_id = aws_kms_key.env_kms_key.id
   tags   = local.additional_tags
 }
@@ -422,7 +456,7 @@ resource "random_password" "reg_mek" {
   min_lower   = 3
   min_upper   = 3
   min_numeric = 3
-  min_special = 0
+  special = false
 }
 
 resource "aws_ssm_parameter" "reg_mek" {
@@ -462,7 +496,42 @@ resource "aws_ssm_parameter" "wcp_database_password" {
 #
 ###############################################################################################
 
+# Response Server
+module "resp_db" {
+  source                    = "terraform-aws-modules/rds/aws"
+  version                   = "~> 3.3.0"
 
+  create_db_instance = var.response_use_rds
+
+  identifier                = "${var.formation}-${var.formation_type}-resp"
+  create_db_option_group    = false
+  create_db_parameter_group = false
+  engine                    = "postgres"
+  engine_version            = "11.12"
+  family                    = "postgres11" # DB parameter group
+  major_engine_version      = "11"         # DB option group
+  instance_class            = "db.t3.medium"
+
+  allocated_storage = 32
+  storage_encrypted = true
+  name              = "postgres"
+  username          = "postgres_admin"
+  password          = aws_ssm_parameter.resp_rds_master_pass.value
+  port              = 5432
+
+  multi_az               = false
+  vpc_security_group_ids = [module.registration_psql_sg.security_group_id]
+  subnet_ids = module.vpc.private_subnets
+
+  backup_retention_period = 35
+  skip_final_snapshot     = true
+  deletion_protection     = false
+  maintenance_window      = "Mon:10:00-Mon:13:00" # In UTC time - 10 AM UTC = 3 AM PST
+  backup_window           = "07:00-10:00"         # In UTC time - 7 AM UTC = midnight PST
+
+  tags = local.additional_tags
+
+}
 
 
 # locals {
