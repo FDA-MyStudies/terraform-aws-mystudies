@@ -367,7 +367,7 @@ resource "aws_kms_key" "env_kms_key" {
   tags                    = local.additional_tags
 }
 
-resource "random_password" "resp_database_password" {
+resource "random_password" "response_database_password" {
   length      = 32
   min_lower   = 3
   min_upper   = 3
@@ -375,15 +375,15 @@ resource "random_password" "resp_database_password" {
   min_special = 1
 }
 
-resource "aws_ssm_parameter" "resp_database_password" {
+resource "aws_ssm_parameter" "response_database_password" {
   name   = "${local.ssm_parameter_path}/db/resp_db_password"
   type   = "SecureString"
-  value  = random_password.resp_database_password.result
+  value  = random_password.response_database_password.result
   key_id = aws_kms_key.env_kms_key.id
   tags   = local.additional_tags
 }
 
-resource "random_password" "resp_rds_master_pass" {
+resource "random_password" "response_rds_master_pass" {
   length      = 32
   min_lower   = 3
   min_upper   = 3
@@ -391,10 +391,10 @@ resource "random_password" "resp_rds_master_pass" {
   min_special = 1
 }
 
-resource "aws_ssm_parameter" "resp_rds_master_pass" {
+resource "aws_ssm_parameter" "response_rds_master_pass" {
   name   = "${local.ssm_parameter_path}/db/resp_rds_master_pass"
   type   = "SecureString"
-  value  = random_password.resp_rds_master_pass.result
+  value  = random_password.response_rds_master_pass.result
   key_id = aws_kms_key.env_kms_key.id
   tags   = local.additional_tags
 }
@@ -402,7 +402,7 @@ resource "aws_ssm_parameter" "resp_rds_master_pass" {
 
 
 # Generate Response LabKey Master Encryption Key (MEK)
-resource "random_password" "resp_mek" {
+resource "random_password" "response_mek" {
   length      = 32
   min_lower   = 3
   min_upper   = 3
@@ -410,15 +410,15 @@ resource "random_password" "resp_mek" {
   special = false
 }
 
-resource "aws_ssm_parameter" "resp_mek" {
+resource "aws_ssm_parameter" "response_mek" {
   name   = "${local.ssm_parameter_path}/mek/resp_mek"
   type   = "SecureString"
-  value  = random_password.resp_mek.result
+  value  = random_password.response_mek.result
   key_id = aws_kms_key.env_kms_key.id
   tags   = local.additional_tags
 }
 
-resource "random_password" "reg_rds_master_pass" {
+resource "random_password" "registration_rds_master_pass" {
   length      = 32
   min_lower   = 3
   min_upper   = 3
@@ -426,15 +426,15 @@ resource "random_password" "reg_rds_master_pass" {
   min_special = 1
 }
 
-resource "aws_ssm_parameter" "reg_rds_master_pass" {
+resource "aws_ssm_parameter" "registration_rds_master_pass" {
   name   = "${local.ssm_parameter_path}/db/reg_rds_master_pass"
   type   = "SecureString"
-  value  = random_password.reg_rds_master_pass.result
+  value  = random_password.registration_rds_master_pass.result
   key_id = aws_kms_key.env_kms_key.id
   tags   = local.additional_tags
 }
 
-resource "random_password" "reg_database_password" {
+resource "random_password" "registration_database_password" {
   length      = 32
   min_lower   = 3
   min_upper   = 3
@@ -442,16 +442,16 @@ resource "random_password" "reg_database_password" {
   min_special = 1
 }
 
-resource "aws_ssm_parameter" "reg_database_password" {
+resource "aws_ssm_parameter" "registration_database_password" {
   name   = "${local.ssm_parameter_path}/db/reg_db_password"
   type   = "SecureString"
-  value  = random_password.reg_database_password.result
+  value  = random_password.registration_database_password.result
   key_id = aws_kms_key.env_kms_key.id
   tags   = local.additional_tags
 }
 
 # Generate Registration LabKey Master Encryption Key (MEK)
-resource "random_password" "reg_mek" {
+resource "random_password" "registration_mek" {
   length      = 32
   min_lower   = 3
   min_upper   = 3
@@ -459,10 +459,10 @@ resource "random_password" "reg_mek" {
   special = false
 }
 
-resource "aws_ssm_parameter" "reg_mek" {
+resource "aws_ssm_parameter" "registration_mek" {
   name   = "${local.ssm_parameter_path}/mek/reg_mek"
   type   = "SecureString"
-  value  = random_password.reg_mek.result
+  value  = random_password.registration_mek.result
   key_id = aws_kms_key.env_kms_key.id
   tags   = local.additional_tags
 }
@@ -496,8 +496,8 @@ resource "aws_ssm_parameter" "wcp_database_password" {
 #
 ###############################################################################################
 
-# Response Server
-module "resp_db" {
+# Response Server RDS Database Instance
+module "response_db" {
   source                    = "terraform-aws-modules/rds/aws"
   version                   = "~> 3.3.0"
 
@@ -516,7 +516,45 @@ module "resp_db" {
   storage_encrypted = true
   name              = "postgres"
   username          = "postgres_admin"
-  password          = aws_ssm_parameter.resp_rds_master_pass.value
+  password          = aws_ssm_parameter.response_rds_master_pass.value
+  port              = 5432
+
+  multi_az               = false
+  vpc_security_group_ids = [module.response_psql_sg.security_group_id]
+  subnet_ids = module.vpc.private_subnets
+
+  backup_retention_period = 35
+  skip_final_snapshot     = true
+  deletion_protection     = false
+  maintenance_window      = "Mon:10:00-Mon:13:00" # In UTC time - 10 AM UTC = 3 AM PST
+  backup_window           = "07:00-10:00"         # In UTC time - 7 AM UTC = midnight PST
+
+  tags = local.additional_tags
+
+}
+
+
+# Registration Server RDS Database Instance
+module "registration_db" {
+  source                    = "terraform-aws-modules/rds/aws"
+  version                   = "~> 3.3.0"
+
+  create_db_instance = var.registration_use_rds
+
+  identifier                = "${var.formation}-${var.formation_type}-reg"
+  create_db_option_group    = false
+  create_db_parameter_group = false
+  engine                    = "postgres"
+  engine_version            = "11.12"
+  family                    = "postgres11" # DB parameter group
+  major_engine_version      = "11"         # DB option group
+  instance_class            = "db.t3.medium"
+
+  allocated_storage = 32
+  storage_encrypted = true
+  name              = "postgres"
+  username          = "postgres_admin"
+  password          = aws_ssm_parameter.registration_rds_master_pass.value
   port              = 5432
 
   multi_az               = false
@@ -532,6 +570,8 @@ module "resp_db" {
   tags = local.additional_tags
 
 }
+
+
 
 
 # locals {

@@ -38,35 +38,35 @@ output "base_domain" {
   value = var.base_domain
 }
 
-output "resp_db_password" {
-  value     = random_password.resp_database_password.result
+output "response_db_password" {
+  value     = random_password.response_database_password.result
   sensitive = true
 }
 
-output "resp_rds_master_pass" {
-  value     = random_password.resp_rds_master_pass.result
+output "response_rds_master_pass" {
+  value     = random_password.response_rds_master_pass.result
   sensitive = true
 }
 
-output "resp_db_id" {
-  value = module.resp_db.db_instance_id
+output "response_db_id" {
+  value = module.response_db.db_instance_id
 }
 
-output "resp_db_az" {
-  value = module.resp_db.db_instance_availability_zone
+output "response_db_az" {
+  value = module.response_db.db_instance_availability_zone
 }
 
-output "resp_db_sg_id" {
+output "response_db_sg_id" {
   value = module.response_psql_sg.security_group_id
 }
 
-output "reg_db_password" {
-  value     = random_password.reg_database_password.result
+output "registration_db_password" {
+  value     = random_password.registration_database_password.result
   sensitive = true
 }
 
-output "reg_rds_master_pass" {
-  value     = random_password.reg_rds_master_pass.result
+output "registration_rds_master_pass" {
+  value     = random_password.registration_rds_master_pass.result
   sensitive = true
 }
 
@@ -75,12 +75,12 @@ output "wcp_db_password" {
   sensitive = true
 }
 
-output "resp_mek" {
-  value     = random_password.resp_mek.result
+output "response_mek" {
+  value     = random_password.response_mek.result
   sensitive = true
 }
 
-output "reg_mek" {
-  value     = random_password.reg_mek.result
+output "registration_mek" {
+  value     = random_password.registration_mek.result
   sensitive = true
 }
