@@ -97,3 +97,20 @@ output "registration_mek" {
   value     = random_password.registration_mek.result
   sensitive = true
 }
+
+output "wcp_rds_master_pass" {
+  value     = random_password.wcp_rds_master_pass.result
+  sensitive = true
+}
+
+output "wcp_db_id" {
+  value = module.wcp_db.db_instance_id
+}
+
+output "wcp_db_az" {
+  value = module.wcp_db.db_instance_availability_zone
+}
+
+output "wcp_db_sg_id" {
+  value = module.wcp_mysql_sg.security_group_id
+}

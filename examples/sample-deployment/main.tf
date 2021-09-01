@@ -42,8 +42,12 @@ module "mystudies" {
   alb_ssl_cert_arn   = var.alb_ssl_cert_arn
   alb_ssl_policy     = var.alb_ssl_policy
 
-  response_use_rds     = var.response_use_rds
-  registration_use_rds = var.registration_use_rds
-  wcp_use_rds          = var.wcp_use_rds
+  use_common_rds_subnet_group      = var.use_common_rds_subnet_group
+  response_use_rds                 = var.response_use_rds
+  response_snapshot_identifier     = var.response_snapshot_identifier
+  registration_use_rds             = var.registration_use_rds
+  registration_snapshot_identifier = var.registration_snapshot_identifier
+  wcp_use_rds                      = var.wcp_use_rds
+  wcp_snapshot_identifier          = var.wcp_snapshot_identifier
 
 }

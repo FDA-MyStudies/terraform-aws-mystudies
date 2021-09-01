@@ -172,10 +172,22 @@ variable "alb_ssl_policy" {
   default = "ELBSecurityPolicy-TLS-1-2-2017-01"
 }
 
+variable "use_common_rds_subnet_group" {
+  type        = bool
+  default     = false
+  description = "Bool to determine use of shared RDS subnet group "
+}
+
 variable "response_use_rds" {
   type        = bool
   default     = false
   description = "Bool to determine use of RDS for Response Server Database"
+}
+
+variable "response_snapshot_identifier" {
+  type        = string
+  default     = null
+  description = "Snapshot Id to create this database from"
 }
 
 variable "registration_use_rds" {
@@ -184,10 +196,22 @@ variable "registration_use_rds" {
   description = "Bool to determine use of RDS for Registration Server Database"
 }
 
+variable "registration_snapshot_identifier" {
+  type        = string
+  default     = null
+  description = "Snapshot Id to create this database from"
+}
+
 variable "wcp_use_rds" {
   type        = bool
   default     = false
   description = "Bool to determine use of RDS for WCP Server Database"
+}
+
+variable "wcp_snapshot_identifier" {
+  type        = string
+  default     = null
+  description = "Snapshot Id to create this database from"
 }
 
 

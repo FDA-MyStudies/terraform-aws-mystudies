@@ -96,3 +96,20 @@ output "registration_db_az" {
 output "registration_db_sg_id" {
   value = module.mystudies.registration_db_sg_id
 }
+
+output "wcp_rds_master_pass" {
+  value     = module.mystudies.wcp_rds_master_pass
+  sensitive = true
+}
+
+output "wcp_db_id" {
+  value = module.mystudies.wcp_db_id
+}
+
+output "wcp_db_az" {
+  value = module.mystudies.wcp_db_az
+}
+
+output "wcp_db_sg_id" {
+  value = module.mystudies.wcp_db_sg_id
+}

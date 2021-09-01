@@ -41,6 +41,8 @@ response_use_rds = false
 registration_use_rds = false
 
 # Deploy WCP RDS DB Instance
-wcp_use_rds = true
+wcp_use_rds = false
 
+# Use Common RDS Subnet Group for RDS instances
+use_common_rds_subnet_group = true
 

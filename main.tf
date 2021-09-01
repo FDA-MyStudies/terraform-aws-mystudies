@@ -369,11 +369,12 @@ resource "aws_kms_key" "env_kms_key" {
 }
 
 resource "random_password" "response_database_password" {
-  length      = 32
-  min_lower   = 3
-  min_upper   = 3
-  min_numeric = 3
-  min_special = 1
+  length           = 32
+  min_lower        = 3
+  min_upper        = 3
+  min_numeric      = 3
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
 resource "aws_ssm_parameter" "response_database_password" {
@@ -385,11 +386,12 @@ resource "aws_ssm_parameter" "response_database_password" {
 }
 
 resource "random_password" "response_rds_master_pass" {
-  length      = 32
-  min_lower   = 3
-  min_upper   = 3
-  min_numeric = 3
-  min_special = 1
+  length           = 32
+  min_lower        = 3
+  min_upper        = 3
+  min_numeric      = 3
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
 resource "aws_ssm_parameter" "response_rds_master_pass" {
@@ -420,11 +422,12 @@ resource "aws_ssm_parameter" "response_mek" {
 }
 
 resource "random_password" "registration_rds_master_pass" {
-  length      = 32
-  min_lower   = 3
-  min_upper   = 3
-  min_numeric = 3
-  min_special = 1
+  length           = 32
+  min_lower        = 3
+  min_upper        = 3
+  min_numeric      = 3
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
 resource "aws_ssm_parameter" "registration_rds_master_pass" {
@@ -436,11 +439,12 @@ resource "aws_ssm_parameter" "registration_rds_master_pass" {
 }
 
 resource "random_password" "registration_database_password" {
-  length      = 32
-  min_lower   = 3
-  min_upper   = 3
-  min_numeric = 3
-  min_special = 1
+  length           = 32
+  min_lower        = 3
+  min_upper        = 3
+  min_numeric      = 3
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
 resource "aws_ssm_parameter" "registration_database_password" {
@@ -471,11 +475,12 @@ resource "aws_ssm_parameter" "registration_mek" {
 
 # Mysql max password length is 32
 resource "random_password" "wcp_database_password" {
-  length      = 30
-  min_lower   = 3
-  min_upper   = 3
-  min_numeric = 3
-  min_special = 1
+  length           = 30
+  min_lower        = 3
+  min_upper        = 3
+  min_numeric      = 3
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
 resource "aws_ssm_parameter" "wcp_database_password" {
@@ -486,8 +491,23 @@ resource "aws_ssm_parameter" "wcp_database_password" {
   tags   = local.additional_tags
 }
 
+resource "random_password" "wcp_rds_master_pass" {
+  length           = 32
+  min_lower        = 3
+  min_upper        = 3
+  min_numeric      = 3
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
 
+resource "aws_ssm_parameter" "wcp_rds_master_pass" {
+  name   = "${local.ssm_parameter_path}/db/wcp_rds_master_pass"
+  type   = "SecureString"
+  value  = random_password.wcp_rds_master_pass.result
+  key_id = aws_kms_key.env_kms_key.id
+  tags   = local.additional_tags
 
+}
 
 
 
@@ -497,10 +517,23 @@ resource "aws_ssm_parameter" "wcp_database_password" {
 #
 ###############################################################################################
 
+module "common_db_subnet_group" {
+  source  = "terraform-aws-modules/rds/aws//modules/db_subnet_group"
+  version = ">= 3.3.0"
+
+  create      = var.use_common_rds_subnet_group
+  name        = "${local.name_prefix}-db-common"
+  description = "${local.name_prefix} common db subnet group"
+  subnet_ids  = module.vpc.database_subnets
+
+  tags = local.additional_tags
+}
+
+
 # Response Server RDS Database Instance
 module "response_db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "~> 3.3.0"
+  version = ">= 3.3.0"
 
   create_db_instance = var.response_use_rds
 
@@ -508,11 +541,13 @@ module "response_db" {
   create_db_option_group    = false
   create_db_parameter_group = false
   create_db_subnet_group    = false
+  db_subnet_group_name      = module.common_db_subnet_group.db_subnet_group_id
   engine                    = "postgres"
   engine_version            = "11.12"
   family                    = "postgres11" # DB parameter group
   major_engine_version      = "11"         # DB option group
   instance_class            = "db.t3.medium"
+  snapshot_identifier       = var.response_snapshot_identifier
 
   allocated_storage = 32
   storage_encrypted = true
@@ -539,7 +574,7 @@ module "response_db" {
 # Registration Server RDS Database Instance
 module "registration_db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = "~> 3.3.0"
+  version = ">= 3.3.0"
 
   create_db_instance = var.registration_use_rds
 
@@ -547,11 +582,13 @@ module "registration_db" {
   create_db_option_group    = false
   create_db_parameter_group = false
   create_db_subnet_group    = false
+  db_subnet_group_name      = module.common_db_subnet_group.db_subnet_group_id
   engine                    = "postgres"
   engine_version            = "11.12"
   family                    = "postgres11" # DB parameter group
   major_engine_version      = "11"         # DB option group
   instance_class            = "db.t3.medium"
+  snapshot_identifier       = var.response_snapshot_identifier
 
   allocated_storage = 32
   storage_encrypted = true
@@ -567,6 +604,7 @@ module "registration_db" {
   backup_retention_period = 35
   skip_final_snapshot     = true
   deletion_protection     = false
+  copy_tags_to_snapshot   = true
   maintenance_window      = "Mon:10:00-Mon:13:00" # In UTC time - 10 AM UTC = 3 AM PST
   backup_window           = "07:00-10:00"         # In UTC time - 7 AM UTC = midnight PST
 
@@ -574,6 +612,46 @@ module "registration_db" {
 
 }
 
+# WCP Server RDS Database Instance
+module "wcp_db" {
+  source  = "terraform-aws-modules/rds/aws"
+  version = ">= 3.3.0"
+
+  create_db_instance = var.wcp_use_rds
+
+  identifier                = "${var.formation}-${var.formation_type}-wcp"
+  create_db_option_group    = false
+  create_db_parameter_group = false
+  create_db_subnet_group    = false
+  db_subnet_group_name      = module.common_db_subnet_group.db_subnet_group_id
+  engine                    = "mysql"
+  engine_version            = "8.0.25"
+  family                    = "mysql8.0" # DB parameter group
+  major_engine_version      = "8.0"      # DB option group
+  instance_class            = "db.t3.medium"
+  snapshot_identifier       = var.response_snapshot_identifier
+
+  allocated_storage = 32
+  storage_encrypted = true
+  name              = "wcp"
+  username          = "mysql_admin"
+  password          = aws_ssm_parameter.wcp_rds_master_pass.value
+  port              = 3306
+
+  multi_az               = false
+  vpc_security_group_ids = [module.wcp_mysql_sg.security_group_id]
+  subnet_ids             = module.vpc.database_subnets
+
+  backup_retention_period = 35
+  skip_final_snapshot     = true
+  deletion_protection     = false
+  copy_tags_to_snapshot   = true
+  maintenance_window      = "Mon:10:00-Mon:13:00" # In UTC time - 10 AM UTC = 3 AM PST
+  backup_window           = "07:00-10:00"         # In UTC time - 7 AM UTC = midnight PST
+
+  tags = local.additional_tags
+
+}
 
 
 
