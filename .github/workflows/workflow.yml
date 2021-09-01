@@ -12,8 +12,31 @@ on:
   workflow_dispatch:
 
 jobs:
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Out Code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Generate Module Docs
+        uses: terraform-docs/gh-actions@v0.10.0
+        with:
+          working-dir: .
+          output-file: README.md
+          git-push: true
+
+      - name: Generate Example Module Docs
+        uses: terraform-docs/gh-actions@v0.10.0
+        with:
+          working-dir: examples/sample-deployment
+          output-file: README.md
+          git-push: true
+
   lint:
-    name: Lint
+    name: lint
     runs-on: ubuntu-latest
     steps:
       - name: Check Out Code

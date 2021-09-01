@@ -1,43 +1,26 @@
 # FDA MyStudies Terraform Module
 
-Terraform module to create and configure the "backend" components of the FDA MyStudies platform.
+Sample deployment of this MyStudies module.
 
 <!-- markdownlint-disable -->
 <!--- BEGIN_TF_DOCS --->
 ## Requirements
 
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | ~> 1 |
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 3.55.0 |
+No requirements.
 
 ## Providers
 
-| Name | Version |
-|------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 3.55.0 |
+No providers.
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_alb"></a> [alb](#module\_alb) | terraform-aws-modules/alb/aws | >= 6.5.0 |
-| <a name="module_endpoints"></a> [endpoints](#module\_endpoints) | terraform-aws-modules/vpc/aws//modules/vpc-endpoints | >= 3.0.0 |
-| <a name="module_https_private_sg"></a> [https\_private\_sg](#module\_https\_private\_sg) | terraform-aws-modules/security-group/aws//modules/https-443 | >= 4.3.0 |
-| <a name="module_lb_http_sg"></a> [lb\_http\_sg](#module\_lb\_http\_sg) | terraform-aws-modules/security-group/aws//modules/http-80 | >= 4.3.0 |
-| <a name="module_lb_https_sg"></a> [lb\_https\_sg](#module\_lb\_https\_sg) | terraform-aws-modules/security-group/aws//modules/https-443 | >= 4.3.0 |
-| <a name="module_office_ssh_sg"></a> [office\_ssh\_sg](#module\_office\_ssh\_sg) | terraform-aws-modules/security-group/aws//modules/ssh | >= 4.3.0 |
-| <a name="module_vpc"></a> [vpc](#module\_vpc) | terraform-aws-modules/vpc/aws | >= 3.6.0 |
+| <a name="module_mystudies"></a> [mystudies](#module\_mystudies) | ../.. | n/a |
 
 ## Resources
 
-| Name | Type |
-|------|------|
-| [aws_alb_listener.alb_https_listener](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_listener) | resource |
-| [aws_alb_target_group.default_target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group) | resource |
-| [aws_ami.ubuntu](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ami) | data source |
-| [aws_availability_zones.available](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/availability_zones) | data source |
-| [aws_route53_zone.env_zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
+No resources.
 
 ## Inputs
 
