@@ -361,7 +361,7 @@ resource "aws_alb_listener" "alb_https_listener" {
 #
 ###############################################################################################
 
-resource "aws_kms_key" "env_kms_key" {
+resource "aws_kms_key" "mystudies_kms_key" {
   description             = "KMS Encryption Key Used for Secrets Management"
   deletion_window_in_days = 30
   enable_key_rotation     = true
@@ -381,7 +381,7 @@ resource "aws_ssm_parameter" "response_database_password" {
   name   = "${local.ssm_parameter_path}/db/resp_db_password"
   type   = "SecureString"
   value  = random_password.response_database_password.result
-  key_id = aws_kms_key.env_kms_key.id
+  key_id = aws_kms_key.mystudies_kms_key.id
   tags   = local.additional_tags
 }
 
@@ -398,7 +398,7 @@ resource "aws_ssm_parameter" "response_rds_master_pass" {
   name   = "${local.ssm_parameter_path}/db/resp_rds_master_pass"
   type   = "SecureString"
   value  = random_password.response_rds_master_pass.result
-  key_id = aws_kms_key.env_kms_key.id
+  key_id = aws_kms_key.mystudies_kms_key.id
   tags   = local.additional_tags
 }
 
@@ -417,7 +417,7 @@ resource "aws_ssm_parameter" "response_mek" {
   name   = "${local.ssm_parameter_path}/mek/resp_mek"
   type   = "SecureString"
   value  = random_password.response_mek.result
-  key_id = aws_kms_key.env_kms_key.id
+  key_id = aws_kms_key.mystudies_kms_key.id
   tags   = local.additional_tags
 }
 
@@ -434,7 +434,7 @@ resource "aws_ssm_parameter" "registration_rds_master_pass" {
   name   = "${local.ssm_parameter_path}/db/reg_rds_master_pass"
   type   = "SecureString"
   value  = random_password.registration_rds_master_pass.result
-  key_id = aws_kms_key.env_kms_key.id
+  key_id = aws_kms_key.mystudies_kms_key.id
   tags   = local.additional_tags
 }
 
@@ -451,7 +451,7 @@ resource "aws_ssm_parameter" "registration_database_password" {
   name   = "${local.ssm_parameter_path}/db/reg_db_password"
   type   = "SecureString"
   value  = random_password.registration_database_password.result
-  key_id = aws_kms_key.env_kms_key.id
+  key_id = aws_kms_key.mystudies_kms_key.id
   tags   = local.additional_tags
 }
 
@@ -468,7 +468,7 @@ resource "aws_ssm_parameter" "registration_mek" {
   name   = "${local.ssm_parameter_path}/mek/reg_mek"
   type   = "SecureString"
   value  = random_password.registration_mek.result
-  key_id = aws_kms_key.env_kms_key.id
+  key_id = aws_kms_key.mystudies_kms_key.id
   tags   = local.additional_tags
 }
 
@@ -487,7 +487,7 @@ resource "aws_ssm_parameter" "wcp_database_password" {
   name   = "${local.ssm_parameter_path}/db/wcp_db_password"
   type   = "SecureString"
   value  = random_password.wcp_database_password.result
-  key_id = aws_kms_key.env_kms_key.id
+  key_id = aws_kms_key.mystudies_kms_key.id
   tags   = local.additional_tags
 }
 
@@ -504,7 +504,7 @@ resource "aws_ssm_parameter" "wcp_rds_master_pass" {
   name   = "${local.ssm_parameter_path}/db/wcp_rds_master_pass"
   type   = "SecureString"
   value  = random_password.wcp_rds_master_pass.result
-  key_id = aws_kms_key.env_kms_key.id
+  key_id = aws_kms_key.mystudies_kms_key.id
   tags   = local.additional_tags
 
 }
@@ -537,7 +537,7 @@ module "response_db" {
 
   create_db_instance = var.response_use_rds
 
-  identifier                = "${var.formation}-${var.formation_type}-resp"
+  identifier                = "${var.formation}-${var.formation_type}-response"
   create_db_option_group    = false
   create_db_parameter_group = false
   create_db_subnet_group    = false
@@ -578,7 +578,7 @@ module "registration_db" {
 
   create_db_instance = var.registration_use_rds
 
-  identifier                = "${var.formation}-${var.formation_type}-reg"
+  identifier                = "${var.formation}-${var.formation_type}-registration"
   create_db_option_group    = false
   create_db_parameter_group = false
   create_db_subnet_group    = false
@@ -588,7 +588,7 @@ module "registration_db" {
   family                    = "postgres11" # DB parameter group
   major_engine_version      = "11"         # DB option group
   instance_class            = "db.t3.medium"
-  snapshot_identifier       = var.response_snapshot_identifier
+  snapshot_identifier       = var.registration_snapshot_identifier
 
   allocated_storage = 32
   storage_encrypted = true
@@ -629,7 +629,7 @@ module "wcp_db" {
   family                    = "mysql8.0" # DB parameter group
   major_engine_version      = "8.0"      # DB option group
   instance_class            = "db.t3.medium"
-  snapshot_identifier       = var.response_snapshot_identifier
+  snapshot_identifier       = var.wcp_snapshot_identifier
 
   allocated_storage = 32
   storage_encrypted = true
