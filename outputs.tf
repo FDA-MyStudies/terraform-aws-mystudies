@@ -38,3 +38,79 @@ output "base_domain" {
   value = var.base_domain
 }
 
+output "response_db_password" {
+  value     = random_password.response_database_password.result
+  sensitive = true
+}
+
+output "response_rds_master_pass" {
+  value     = random_password.response_rds_master_pass.result
+  sensitive = true
+}
+
+output "response_db_id" {
+  value = module.response_db.db_instance_id
+}
+
+output "response_db_az" {
+  value = module.response_db.db_instance_availability_zone
+}
+
+output "response_db_sg_id" {
+  value = module.response_psql_sg.security_group_id
+}
+
+output "registration_db_password" {
+  value     = random_password.registration_database_password.result
+  sensitive = true
+}
+
+output "registration_rds_master_pass" {
+  value     = random_password.registration_rds_master_pass.result
+  sensitive = true
+}
+
+output "registration_db_id" {
+  value = module.registration_db.db_instance_id
+}
+
+output "registration_db_az" {
+  value = module.registration_db.db_instance_availability_zone
+}
+
+output "registration_db_sg_id" {
+  value = module.registration_psql_sg.security_group_id
+}
+
+
+output "wcp_db_password" {
+  value     = random_password.wcp_database_password.result
+  sensitive = true
+}
+
+output "response_mek" {
+  value     = random_password.response_mek.result
+  sensitive = true
+}
+
+output "registration_mek" {
+  value     = random_password.registration_mek.result
+  sensitive = true
+}
+
+output "wcp_rds_master_pass" {
+  value     = random_password.wcp_rds_master_pass.result
+  sensitive = true
+}
+
+output "wcp_db_id" {
+  value = module.wcp_db.db_instance_id
+}
+
+output "wcp_db_az" {
+  value = module.wcp_db.db_instance_availability_zone
+}
+
+output "wcp_db_sg_id" {
+  value = module.wcp_mysql_sg.security_group_id
+}

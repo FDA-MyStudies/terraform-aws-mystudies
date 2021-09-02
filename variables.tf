@@ -43,12 +43,15 @@ variable "private_subnets" {
   description = "list of private subnets to use when creating vpc"
 }
 
+variable "database_subnets" {
+  type        = list(string)
+  description = "list of database subnets to use when creating vpc"
+}
+
 variable "public_subnets" {
   type        = list(string)
   description = "list of public subnets to use when creating vpc"
 }
-
-
 
 /*
  variable "private_subnet_ids" {
@@ -167,6 +170,48 @@ variable "alb_ssl_policy" {
   # Amazon provided policies can be found:
   # http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-security-policy-table.html
   default = "ELBSecurityPolicy-TLS-1-2-2017-01"
+}
+
+variable "use_common_rds_subnet_group" {
+  type        = bool
+  default     = false
+  description = "Bool to determine use of shared RDS subnet group "
+}
+
+variable "response_use_rds" {
+  type        = bool
+  default     = false
+  description = "Bool to determine use of RDS for Response Server Database"
+}
+
+variable "response_snapshot_identifier" {
+  type        = string
+  default     = null
+  description = "Snapshot Id to create this database from"
+}
+
+variable "registration_use_rds" {
+  type        = bool
+  default     = false
+  description = "Bool to determine use of RDS for Registration Server Database"
+}
+
+variable "registration_snapshot_identifier" {
+  type        = string
+  default     = null
+  description = "Snapshot Id to create this database from"
+}
+
+variable "wcp_use_rds" {
+  type        = bool
+  default     = false
+  description = "Bool to determine use of RDS for WCP Server Database"
+}
+
+variable "wcp_snapshot_identifier" {
+  type        = string
+  default     = null
+  description = "Snapshot Id to create this database from"
 }
 
 

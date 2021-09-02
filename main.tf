@@ -41,9 +41,10 @@ locals {
 
 
 
-  name_prefix = var.formation
-  name_type   = var.formation_type
-  env_dns     = var.base_domain
+  name_prefix        = var.formation
+  name_type          = var.formation_type
+  env_dns            = var.base_domain
+  ssm_parameter_path = "/${var.formation}/${var.formation_type}"
   additional_tags = merge(var.common_tags, tomap({
     Prefix      = local.name_prefix
     Environment = var.formation_type
@@ -60,11 +61,11 @@ locals {
   # values for wcp install script(s)
 }
 
-###
+###############################################################################################
 #
 # Networking
 #
-###
+###############################################################################################
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
@@ -81,8 +82,9 @@ module "vpc" {
     data.aws_availability_zones.available.names[2],
   ]
 
-  private_subnets = var.private_subnets
-  public_subnets  = var.public_subnets
+  private_subnets  = var.private_subnets
+  database_subnets = var.database_subnets
+  public_subnets   = var.public_subnets
 
   enable_nat_gateway = true
   single_nat_gateway = true
@@ -131,6 +133,12 @@ module "endpoints" {
 
   tags = local.additional_tags
 }
+
+###############################################################################################
+#
+# Security Groups
+#
+###############################################################################################
 
 module "lb_http_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/http-80"
@@ -195,6 +203,68 @@ module "office_ssh_sg" {
 }
 
 
+module "response_psql_sg" {
+  source  = "terraform-aws-modules/security-group/aws//modules/postgresql"
+  version = ">= 4.3.0"
+
+  create = var.response_use_rds
+  name   = "${local.name_prefix}-response-psql-sg"
+  vpc_id = module.vpc.vpc_id
+
+  description = "Security group for Response Server RDS Instance"
+
+  ingress_cidr_blocks = var.private_subnets
+
+  tags = merge(
+    local.additional_tags,
+    {
+      Name = "${local.name_prefix}-response-psql-sg"
+    },
+  )
+}
+
+module "registration_psql_sg" {
+  source  = "terraform-aws-modules/security-group/aws//modules/postgresql"
+  version = ">= 4.3.0"
+
+  create = var.registration_use_rds
+  name   = "${local.name_prefix}-registration-psql-sg"
+  vpc_id = module.vpc.vpc_id
+
+  description = "Security group for Registration Server RDS Instance"
+
+  ingress_cidr_blocks = var.private_subnets
+
+  tags = merge(
+    local.additional_tags,
+    {
+      Name = "${local.name_prefix}-registration-psql-sg"
+    },
+  )
+}
+
+module "wcp_mysql_sg" {
+  source  = "terraform-aws-modules/security-group/aws//modules/mysql"
+  version = ">= 4.3.0"
+
+  create = var.wcp_use_rds
+  name   = "${local.name_prefix}-wcp_mysql_sg"
+  vpc_id = module.vpc.vpc_id
+
+  description = "Security group for WCP Server RDS Instance"
+
+  ingress_cidr_blocks = var.private_subnets
+
+  tags = merge(
+    local.additional_tags,
+    {
+      Name = "${local.name_prefix}-wcp_mysql_sg"
+    },
+  )
+}
+
+
+
 # use existing DNS Zone provided by var.base.domain
 data "aws_route53_zone" "env_zone" {
   name = var.base_domain
@@ -223,7 +293,7 @@ module "acm" {
 
 
 
-
+# Application Load Balancer
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = ">= 6.5.0"
@@ -285,15 +355,315 @@ resource "aws_alb_listener" "alb_https_listener" {
 }
 
 
+###############################################################################################
+#
+# Secrets Management
+#
+###############################################################################################
+
+resource "aws_kms_key" "mystudies_kms_key" {
+  description             = "KMS Encryption Key Used for Secrets Management"
+  deletion_window_in_days = 30
+  enable_key_rotation     = true
+  tags                    = local.additional_tags
+}
+
+resource "random_password" "response_database_password" {
+  length           = 32
+  min_lower        = 3
+  min_upper        = 3
+  min_numeric      = 3
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+resource "aws_ssm_parameter" "response_database_password" {
+  name   = "${local.ssm_parameter_path}/db/resp_db_password"
+  type   = "SecureString"
+  value  = random_password.response_database_password.result
+  key_id = aws_kms_key.mystudies_kms_key.id
+  tags   = local.additional_tags
+}
+
+resource "random_password" "response_rds_master_pass" {
+  length           = 32
+  min_lower        = 3
+  min_upper        = 3
+  min_numeric      = 3
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+resource "aws_ssm_parameter" "response_rds_master_pass" {
+  name   = "${local.ssm_parameter_path}/db/resp_rds_master_pass"
+  type   = "SecureString"
+  value  = random_password.response_rds_master_pass.result
+  key_id = aws_kms_key.mystudies_kms_key.id
+  tags   = local.additional_tags
+}
+
+
+
+# Generate Response LabKey Master Encryption Key (MEK)
+resource "random_password" "response_mek" {
+  length      = 32
+  min_lower   = 3
+  min_upper   = 3
+  min_numeric = 3
+  special     = false
+}
+
+resource "aws_ssm_parameter" "response_mek" {
+  name   = "${local.ssm_parameter_path}/mek/resp_mek"
+  type   = "SecureString"
+  value  = random_password.response_mek.result
+  key_id = aws_kms_key.mystudies_kms_key.id
+  tags   = local.additional_tags
+}
+
+resource "random_password" "registration_rds_master_pass" {
+  length           = 32
+  min_lower        = 3
+  min_upper        = 3
+  min_numeric      = 3
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+resource "aws_ssm_parameter" "registration_rds_master_pass" {
+  name   = "${local.ssm_parameter_path}/db/reg_rds_master_pass"
+  type   = "SecureString"
+  value  = random_password.registration_rds_master_pass.result
+  key_id = aws_kms_key.mystudies_kms_key.id
+  tags   = local.additional_tags
+}
+
+resource "random_password" "registration_database_password" {
+  length           = 32
+  min_lower        = 3
+  min_upper        = 3
+  min_numeric      = 3
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+resource "aws_ssm_parameter" "registration_database_password" {
+  name   = "${local.ssm_parameter_path}/db/reg_db_password"
+  type   = "SecureString"
+  value  = random_password.registration_database_password.result
+  key_id = aws_kms_key.mystudies_kms_key.id
+  tags   = local.additional_tags
+}
+
+# Generate Registration LabKey Master Encryption Key (MEK)
+resource "random_password" "registration_mek" {
+  length      = 32
+  min_lower   = 3
+  min_upper   = 3
+  min_numeric = 3
+  special     = false
+}
+
+resource "aws_ssm_parameter" "registration_mek" {
+  name   = "${local.ssm_parameter_path}/mek/reg_mek"
+  type   = "SecureString"
+  value  = random_password.registration_mek.result
+  key_id = aws_kms_key.mystudies_kms_key.id
+  tags   = local.additional_tags
+}
+
+
+# Mysql max password length is 32
+resource "random_password" "wcp_database_password" {
+  length           = 30
+  min_lower        = 3
+  min_upper        = 3
+  min_numeric      = 3
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+resource "aws_ssm_parameter" "wcp_database_password" {
+  name   = "${local.ssm_parameter_path}/db/wcp_db_password"
+  type   = "SecureString"
+  value  = random_password.wcp_database_password.result
+  key_id = aws_kms_key.mystudies_kms_key.id
+  tags   = local.additional_tags
+}
+
+resource "random_password" "wcp_rds_master_pass" {
+  length           = 32
+  min_lower        = 3
+  min_upper        = 3
+  min_numeric      = 3
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
+}
+
+resource "aws_ssm_parameter" "wcp_rds_master_pass" {
+  name   = "${local.ssm_parameter_path}/db/wcp_rds_master_pass"
+  type   = "SecureString"
+  value  = random_password.wcp_rds_master_pass.result
+  key_id = aws_kms_key.mystudies_kms_key.id
+  tags   = local.additional_tags
+
+}
+
+
+
+###############################################################################################
+#
+# RDS Deployments
+#
+###############################################################################################
+
+module "common_db_subnet_group" {
+  source  = "terraform-aws-modules/rds/aws//modules/db_subnet_group"
+  version = ">= 3.3.0"
+
+  create      = var.use_common_rds_subnet_group
+  name        = "${local.name_prefix}-db-common"
+  description = "${local.name_prefix} common db subnet group"
+  subnet_ids  = module.vpc.database_subnets
+
+  tags = local.additional_tags
+}
+
+
+# Response Server RDS Database Instance
+module "response_db" {
+  source  = "terraform-aws-modules/rds/aws"
+  version = ">= 3.3.0"
+
+  create_db_instance = var.response_use_rds
+
+  identifier                = "${var.formation}-${var.formation_type}-response"
+  create_db_option_group    = false
+  create_db_parameter_group = false
+  create_db_subnet_group    = false
+  db_subnet_group_name      = module.common_db_subnet_group.db_subnet_group_id
+  engine                    = "postgres"
+  engine_version            = "11.12"
+  family                    = "postgres11" # DB parameter group
+  major_engine_version      = "11"         # DB option group
+  instance_class            = "db.t3.medium"
+  snapshot_identifier       = var.response_snapshot_identifier
+
+  allocated_storage = 32
+  storage_encrypted = true
+  name              = "postgres"
+  username          = "postgres_admin"
+  password          = aws_ssm_parameter.response_rds_master_pass.value
+  port              = 5432
+
+  multi_az               = false
+  vpc_security_group_ids = [module.response_psql_sg.security_group_id]
+  subnet_ids             = module.vpc.database_subnets
+
+  backup_retention_period = 35
+  skip_final_snapshot     = true
+  deletion_protection     = false
+  maintenance_window      = "Mon:10:00-Mon:13:00" # In UTC time - 10 AM UTC = 3 AM PST
+  backup_window           = "07:00-10:00"         # In UTC time - 7 AM UTC = midnight PST
+
+  tags = local.additional_tags
+
+}
+
+
+# Registration Server RDS Database Instance
+module "registration_db" {
+  source  = "terraform-aws-modules/rds/aws"
+  version = ">= 3.3.0"
+
+  create_db_instance = var.registration_use_rds
+
+  identifier                = "${var.formation}-${var.formation_type}-registration"
+  create_db_option_group    = false
+  create_db_parameter_group = false
+  create_db_subnet_group    = false
+  db_subnet_group_name      = module.common_db_subnet_group.db_subnet_group_id
+  engine                    = "postgres"
+  engine_version            = "11.12"
+  family                    = "postgres11" # DB parameter group
+  major_engine_version      = "11"         # DB option group
+  instance_class            = "db.t3.medium"
+  snapshot_identifier       = var.registration_snapshot_identifier
+
+  allocated_storage = 32
+  storage_encrypted = true
+  name              = "postgres"
+  username          = "postgres_admin"
+  password          = aws_ssm_parameter.registration_rds_master_pass.value
+  port              = 5432
+
+  multi_az               = false
+  vpc_security_group_ids = [module.registration_psql_sg.security_group_id]
+  subnet_ids             = module.vpc.database_subnets
+
+  backup_retention_period = 35
+  skip_final_snapshot     = true
+  deletion_protection     = false
+  copy_tags_to_snapshot   = true
+  maintenance_window      = "Mon:10:00-Mon:13:00" # In UTC time - 10 AM UTC = 3 AM PST
+  backup_window           = "07:00-10:00"         # In UTC time - 7 AM UTC = midnight PST
+
+  tags = local.additional_tags
+
+}
+
+# WCP Server RDS Database Instance
+module "wcp_db" {
+  source  = "terraform-aws-modules/rds/aws"
+  version = ">= 3.3.0"
+
+  create_db_instance = var.wcp_use_rds
+
+  identifier                = "${var.formation}-${var.formation_type}-wcp"
+  create_db_option_group    = false
+  create_db_parameter_group = false
+  create_db_subnet_group    = false
+  db_subnet_group_name      = module.common_db_subnet_group.db_subnet_group_id
+  engine                    = "mysql"
+  engine_version            = "8.0.25"
+  family                    = "mysql8.0" # DB parameter group
+  major_engine_version      = "8.0"      # DB option group
+  instance_class            = "db.t3.medium"
+  snapshot_identifier       = var.wcp_snapshot_identifier
+
+  allocated_storage = 32
+  storage_encrypted = true
+  name              = "wcp"
+  username          = "mysql_admin"
+  password          = aws_ssm_parameter.wcp_rds_master_pass.value
+  port              = 3306
+
+  multi_az               = false
+  vpc_security_group_ids = [module.wcp_mysql_sg.security_group_id]
+  subnet_ids             = module.vpc.database_subnets
+
+  backup_retention_period = 35
+  skip_final_snapshot     = true
+  deletion_protection     = false
+  copy_tags_to_snapshot   = true
+  maintenance_window      = "Mon:10:00-Mon:13:00" # In UTC time - 10 AM UTC = 3 AM PST
+  backup_window           = "07:00-10:00"         # In UTC time - 7 AM UTC = midnight PST
+
+  tags = local.additional_tags
+
+}
+
+
+
 # locals {
 #   security_groups = local.create_sg ? [module.ssh_sg.security_group_id] : var.security_groups
 # }
 
-###
+###############################################################################################
 #
 # Server EC2 instances
 #
-###
+###############################################################################################
 
 # find the latest Ubuntu AMI for use in aws_instances below
 data "aws_ami" "ubuntu" {
