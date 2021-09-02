@@ -73,6 +73,7 @@ jobs:
           iac_type: 'terraform'
           policy_type: 'aws'
           verbose: true
+          only_warn: true
       #     sarif_upload: true
 
       # - name: Upload SARIF file
