@@ -9,6 +9,11 @@ export DEBUG=1
 # bash strict mode
 set -euo pipefail
 
+export GIT_FLAGS='--quiet'
+%{ if debug }
+export GIT_FLAGS=''
+%{ endif }
+
 if ! command -v git 2>&1 >/dev/null; then
   sudo apt-get update -yqq
   sudo apt-get install git -yqq
@@ -16,7 +21,7 @@ fi
 
 tmp_dir="$(mktemp -d)"
 
-git clone ${url} "$tmp_dir"
+git clone $GIT_FLAGS ${url} "$tmp_dir"
 
 %{ for env_key, env_value in environment }
 export ${env_key}="${env_value}"
@@ -25,12 +30,14 @@ export ${env_key}="${env_value}"
 cd "$tmp_dir"
 
 %{ if branch != null }
-git fetch
-git checkout remote ${branch}
+git $GIT_FLAGS fetch
+git $GIT_FLAGS checkout ${branch}
 %{ endif }
 
 %{ if debug }
 env | sort
+
+ec2metadata
 %{ endif }
 
 sudo -E ./install-${script_name}.bash

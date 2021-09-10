@@ -14,31 +14,23 @@
 # limitations under the License.
 #
 
-output "response_base_server_url" {
-  value = "https://response.${var.base_domain}"
+variable "debug" {
+  type        = bool
+  default     = false
+  description = "whether to increase verbosity of shell scripts or not"
 }
 
-# output "vpc_id" {
-#   value = module.vpc.vpc_id
-# }
+variable "subnet_id" {
+  type        = string
+  description = "subnet to create instances in"
+}
 
-# output "vpc_arn" {
-#   value = module.vpc.vpc_arn
-# }
+variable "private_key_path" {
+  type        = string
+  description = "path to the ssh private key used for provisioning instances"
+}
 
-# output "vpc_cidr" {
-#   value = module.vpc.vpc_cidr_block
-# }
-
-# output "igw_id" {
-#   value = module.vpc.igw_id
-# }
-
-# output "vpc_alb_arn" {
-#   value = module.alb.lb_arn
-# }
-
-# output "base_domain" {
-#   value = var.base_domain
-# }
-
+variable "keypair_name" {
+  type        = string
+  description = "name of existing keypair to use when creating EC2"
+}

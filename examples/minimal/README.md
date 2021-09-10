@@ -1,6 +1,6 @@
 # FDA MyStudies Terraform Module
 
-Sample deployment of this MyStudies module.
+Sample deployment of this MyStudies module with the required variables supplied through environment variables.
 
 <!-- markdownlint-disable -->
 <!--- BEGIN_TF_DOCS --->

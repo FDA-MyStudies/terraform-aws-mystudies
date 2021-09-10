@@ -14,27 +14,27 @@
 # limitations under the License.
 #
 
-output "vpc_id" {
-  value = module.mystudies.vpc_id
-}
+# output "vpc_id" {
+#   value = module.mystudies.vpc_id
+# }
 
-output "vpc_arn" {
-  value = module.mystudies.vpc_arn
-}
+# output "vpc_arn" {
+#   value = module.mystudies.vpc_arn
+# }
 
-output "vpc_cidr" {
-  value = module.mystudies.vpc_cidr
-}
+# output "vpc_cidr" {
+#   value = module.mystudies.vpc_cidr
+# }
 
-output "igw_id" {
-  value = module.mystudies.igw_id
-}
+# output "igw_id" {
+#   value = module.mystudies.igw_id
+# }
 
-output "vpc_alb_arn" {
-  value = module.mystudies.vpc_alb_arn
-}
+# output "vpc_alb_arn" {
+#   value = module.mystudies.vpc_alb_arn
+# }
 
-output "base_domain" {
-  value = var.base_domain
-}
+# output "base_domain" {
+#   value = var.base_domain
+# }
 
