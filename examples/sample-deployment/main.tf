@@ -1,12 +1,16 @@
 
+# Example AWS S3 backend state storage
+
+/*
 terraform {
   backend "s3" {
-    bucket  = "tf.syseng.labkey.com"
+    bucket  = "my_special_bucket_name"
     key     = "mystudies/dev/terraform.tfstate"
     region  = "us-west-2"
     encrypt = true
   }
 }
+*/
 
 provider "aws" {
   region = local.region
