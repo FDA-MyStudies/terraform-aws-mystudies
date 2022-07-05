@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 LabKey Corporation
+# Copyright (c) 2021-2022 LabKey Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -69,7 +69,8 @@ locals {
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = ">= 3.6.0"
+  version = ">= 3.14.2"
+  # https://github.com/terraform-aws-modules/terraform-aws-vpc
 
   #create_vpc = var.vpc_id == null
 
@@ -108,7 +109,8 @@ module "vpc" {
 
 module "endpoints" {
   source  = "terraform-aws-modules/vpc/aws//modules/vpc-endpoints"
-  version = ">= 3.0.0"
+  version = ">= 3.14.2"
+  # https://github.com/terraform-aws-modules/terraform-aws-vpc
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
@@ -142,7 +144,8 @@ module "endpoints" {
 
 module "lb_http_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/http-80"
-  version = ">= 4.3.0"
+  version = ">= 4.8.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-security-group
 
   name        = "${var.formation}-${var.formation_type}-alb-http"
   vpc_id      = module.vpc.vpc_id
@@ -155,7 +158,8 @@ module "lb_http_sg" {
 
 module "lb_https_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/https-443"
-  version = ">= 4.3.0"
+  version = ">= 4.8.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-security-group
 
   name        = "${var.formation}-${var.formation_type}-alb-https"
   vpc_id      = module.vpc.vpc_id
@@ -168,7 +172,8 @@ module "lb_https_sg" {
 
 module "https_private_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/https-443"
-  version = ">= 4.3.0"
+  version = ">= 4.8.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-security-group
 
   name        = "${var.formation}-${var.formation_type}-private-https"
   vpc_id      = module.vpc.vpc_id
@@ -181,7 +186,8 @@ module "https_private_sg" {
 
 module "office_ssh_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/ssh"
-  version = ">= 4.3.0"
+  version = ">= 4.8.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-security-group
 
   # skip creation if user has supplied own security groups list
   #create = local.create_sg
@@ -205,7 +211,8 @@ module "office_ssh_sg" {
 
 module "response_psql_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/postgresql"
-  version = ">= 4.3.0"
+  version = ">= 4.8.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-security-group
 
   create = var.response_use_rds
   name   = "${local.name_prefix}-response-psql-sg"
@@ -225,7 +232,8 @@ module "response_psql_sg" {
 
 module "registration_psql_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/postgresql"
-  version = ">= 4.3.0"
+  version = ">= 4.8.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-security-group
 
   create = var.registration_use_rds
   name   = "${local.name_prefix}-registration-psql-sg"
@@ -245,7 +253,8 @@ module "registration_psql_sg" {
 
 module "wcp_mysql_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/mysql"
-  version = ">= 4.3.0"
+  version = ">= 4.8.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-security-group
 
   create = var.wcp_use_rds
   name   = "${local.name_prefix}-wcp_mysql_sg"
@@ -296,7 +305,8 @@ module "acm" {
 # Application Load Balancer
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
-  version = ">= 6.5.0"
+  version = ">= 6.10.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-alb
 
   depends_on = [
     module.vpc,
@@ -329,6 +339,7 @@ module "alb" {
     }
   ]
 
+  drop_invalid_header_fields = true
   tags = local.additional_tags
 }
 
@@ -519,7 +530,8 @@ resource "aws_ssm_parameter" "wcp_rds_master_pass" {
 
 module "common_db_subnet_group" {
   source  = "terraform-aws-modules/rds/aws//modules/db_subnet_group"
-  version = ">= 3.3.0"
+  version = ">= 4.4.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-rds
 
   create      = var.use_common_rds_subnet_group
   name        = "${local.name_prefix}-db-common"
@@ -533,7 +545,8 @@ module "common_db_subnet_group" {
 # Response Server RDS Database Instance
 module "response_db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = ">= 3.3.0"
+  version = ">= 4.4.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-rds
 
   create_db_instance = var.response_use_rds
 
@@ -551,7 +564,7 @@ module "response_db" {
 
   allocated_storage = 32
   storage_encrypted = true
-  name              = "postgres"
+  db_name              = "postgres"
   username          = "postgres_admin"
   password          = aws_ssm_parameter.response_rds_master_pass.value
   port              = 5432
@@ -574,7 +587,8 @@ module "response_db" {
 # Registration Server RDS Database Instance
 module "registration_db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = ">= 3.3.0"
+  version = ">= 4.4.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-rds
 
   create_db_instance = var.registration_use_rds
 
@@ -592,7 +606,7 @@ module "registration_db" {
 
   allocated_storage = 32
   storage_encrypted = true
-  name              = "postgres"
+  db_name              = "postgres"
   username          = "postgres_admin"
   password          = aws_ssm_parameter.registration_rds_master_pass.value
   port              = 5432
@@ -615,7 +629,8 @@ module "registration_db" {
 # WCP Server RDS Database Instance
 module "wcp_db" {
   source  = "terraform-aws-modules/rds/aws"
-  version = ">= 3.3.0"
+  version = ">= 4.4.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-rds
 
   create_db_instance = var.wcp_use_rds
 
@@ -633,7 +648,7 @@ module "wcp_db" {
 
   allocated_storage = 32
   storage_encrypted = true
-  name              = "wcp"
+  db_name              = "wcp"
   username          = "mysql_admin"
   password          = aws_ssm_parameter.wcp_rds_master_pass.value
   port              = 3306
