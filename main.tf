@@ -415,7 +415,7 @@ resource "aws_ssm_parameter" "response_rds_master_pass" {
 
 
 
-# Generate Response LabKey Master Encryption Key (MEK)
+# Generate Response LabKey Main Encryption Key (MEK)
 resource "random_password" "response_mek" {
   length      = 32
   min_lower   = 3
@@ -466,7 +466,7 @@ resource "aws_ssm_parameter" "registration_database_password" {
   tags   = local.additional_tags
 }
 
-# Generate Registration LabKey Master Encryption Key (MEK)
+# Generate Registration LabKey Main Encryption Key (MEK)
 resource "random_password" "registration_mek" {
   length      = 32
   min_lower   = 3
