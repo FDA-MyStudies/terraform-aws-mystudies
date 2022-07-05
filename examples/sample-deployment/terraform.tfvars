@@ -16,9 +16,9 @@ alb_ssl_cert_arn = "arn:aws:acm:us-west-2:454841571423:certificate/fdc7e2c1-8a32
 
 alb_ssl_policy = "ELBSecurityPolicy-TLS-1-2-2017-01"
 
-office_cidr_A = "199.76.89.158/32"
+office_cidr_A = "144.202.87.91/32"
 
-office_cidr_B = "199.76.89.152/32"
+office_cidr_B = "131.226.35.101/32"
 
 #private_key_path = ""
 
