@@ -31,7 +31,6 @@ module "mystudies" {
   alb_ssl_policy                   = var.alb_ssl_policy
   bastion_enabled                  = var.bastion_enabled
   bastion_instance_type            = var.bastion_instance_type
-  bastion_tags                     = var.common_tags
   bastion_user                     = var.bastion_user
   bastion_user_data                = var.bastion_user_data
   common_tags                      = var.common_tags

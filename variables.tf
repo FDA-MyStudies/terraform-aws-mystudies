@@ -148,12 +148,6 @@ variable "bastion_user_data" {
   description = "Bastion Instance User data content"
 }
 
-variable "bastion_tags" {
-  type        = map(string)
-  default     = {}
-  description = "Additional tags to add to Bastion instance (e.g. `{'BusinessUnit': 'XYZ'}`)."
-}
-
 
 variable "user" {
   type        = string

@@ -309,7 +309,7 @@ module "ec2_bastion" {
   security_groups             = [module.bastion_ssh_sg.security_group_id]
   ssh_user                    = var.bastion_user
   subnets                     = module.vpc.public_subnets
-  tags                        = var.bastion_tags
+  tags                        = local.additional_tags
   user_data                   = var.bastion_user_data
   vpc_id                      = module.vpc.vpc_id
 
