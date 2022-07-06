@@ -20,11 +20,23 @@ office_cidr_A = "144.202.87.91/32"
 
 office_cidr_B = "131.226.35.101/32"
 
+keypair_name = "4c2795d-20210823"
+
 #private_key_path = ""
 
 formation = "mystudies"
 
 formation_type = "dev"
+
+bastion_enabled = "true"
+
+bastion_instance_type = "t3a.nano"
+
+# Applies latest linux patches and installs ncat which is used to allow ssh through bastion instance to target instance
+bastion_user_data = [
+"yum update -y && yum install -y nmap-ncat"
+]
+
 
 common_tags = {
   Client = "labkey"

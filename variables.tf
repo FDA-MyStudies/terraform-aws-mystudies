@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 LabKey Corporation
+# Copyright (c) 2021-2022 LabKey Corporation
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -125,10 +125,35 @@ variable "s3_state_region" {
   description = "region of the S3 state bucket"
 }
 
+variable "bastion_enabled" {
+  type        = bool
+  default     = null
+  description = "Set to false to prevent the module from creating bastion instance resources"
+}
+
 variable "bastion_user" {
   description = "IAM user for logging into the bastion host"
   default     = "ec2-user"
 }
+
+variable "bastion_instance_type" {
+  type        = string
+  default     = "t3.micro"
+  description = "Bastion instance type"
+}
+
+variable "bastion_user_data" {
+  type        = list(string)
+  default     = []
+  description = "Bastion Instance User data content"
+}
+
+variable "bastion_tags" {
+  type        = map(string)
+  default     = {}
+  description = "Additional tags to add to Bastion instance (e.g. `{'BusinessUnit': 'XYZ'}`)."
+}
+
 
 variable "user" {
   type        = string

@@ -142,6 +142,20 @@ module "endpoints" {
 #
 ###############################################################################################
 
+module "bastion_ssh_sg" {
+  source  = "terraform-aws-modules/security-group/aws//modules/ssh"
+  version = ">= 4.8.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-security-group
+
+  name        = "${var.formation}-${var.formation_type}-alb-http"
+  vpc_id      = module.vpc.vpc_id
+  description = "Security group with HTTP ports open for everybody (IPv4 CIDR), egress ports are all world open"
+
+  ingress_cidr_blocks = [var.office_cidr_A, var.office_cidr_B]
+
+  tags = local.additional_tags
+}
+
 module "lb_http_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/http-80"
   version = ">= 4.8.0"
@@ -272,6 +286,38 @@ module "wcp_mysql_sg" {
   )
 }
 
+###############################################################################################
+#
+# Bastion Instance - used to provide ssh to instance and Terraform Remote Exec Provisioning
+#
+###############################################################################################
+
+module "ec2_bastion" {
+  source  = "cloudposse/ec2-bastion-server/aws"
+  version = "0.30.1"
+  # https://github.com/cloudposse/terraform-aws-ec2-bastion-server
+
+  enabled = var.bastion_enabled
+
+
+  associate_public_ip_address = true
+  instance_type               = var.bastion_instance_type
+  key_name                    = var.keypair_name
+  name                        = "JUMPBOX"
+  namespace                   = var.formation
+  security_group_enabled      = false
+  security_groups             = [module.bastion_ssh_sg.security_group_id]
+  ssh_user                    = var.bastion_user
+  subnets                     = module.vpc.public_subnets
+  tags                        = var.bastion_tags
+  user_data                   = var.bastion_user_data
+  vpc_id                      = module.vpc.vpc_id
+
+
+}
+
+
+
 
 
 # use existing DNS Zone provided by var.base.domain
@@ -340,7 +386,7 @@ module "alb" {
   ]
 
   drop_invalid_header_fields = true
-  tags = local.additional_tags
+  tags                       = local.additional_tags
 }
 
 resource "aws_alb_target_group" "default_target" {
@@ -564,7 +610,7 @@ module "response_db" {
 
   allocated_storage = 32
   storage_encrypted = true
-  db_name              = "postgres"
+  db_name           = "postgres"
   username          = "postgres_admin"
   password          = aws_ssm_parameter.response_rds_master_pass.value
   port              = 5432
@@ -606,7 +652,7 @@ module "registration_db" {
 
   allocated_storage = 32
   storage_encrypted = true
-  db_name              = "postgres"
+  db_name           = "postgres"
   username          = "postgres_admin"
   password          = aws_ssm_parameter.registration_rds_master_pass.value
   port              = 5432
@@ -648,7 +694,7 @@ module "wcp_db" {
 
   allocated_storage = 32
   storage_encrypted = true
-  db_name              = "wcp"
+  db_name           = "wcp"
   username          = "mysql_admin"
   password          = aws_ssm_parameter.wcp_rds_master_pass.value
   port              = 3306
