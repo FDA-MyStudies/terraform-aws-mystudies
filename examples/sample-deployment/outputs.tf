@@ -16,27 +16,27 @@
 
 output "vpc_id" {
   description = "ID of the deployed VPC"
-  value = module.mystudies.vpc_id
+  value       = module.mystudies.vpc_id
 }
 
 output "vpc_arn" {
   description = "ARN of the deployed VPC"
-  value = module.mystudies.vpc_arn
+  value       = module.mystudies.vpc_arn
 }
 
 output "vpc_cidr" {
   description = "CIDR of the deployed VPC"
-  value = module.mystudies.vpc_cidr
+  value       = module.mystudies.vpc_cidr
 }
 
 output "igw_id" {
   description = "Internet gateway ID of the deployed VPC"
-  value = module.mystudies.igw_id
+  value       = module.mystudies.igw_id
 }
 
 output "vpc_alb_arn" {
   description = "ARN of the deployed Application Load Balancer"
-  value = module.mystudies.vpc_alb_arn
+  value       = module.mystudies.vpc_alb_arn
 }
 
 output "base_domain" {
@@ -95,7 +95,7 @@ output "bastion_name" {
 
 output "bastion_ssh_user" {
   description = "Default Username to ssh to bastion instance"
-  value = module.mystudies.bastion_ssh_user
+  value       = module.mystudies.bastion_ssh_user
 }
 
 output "response_db_password" {
