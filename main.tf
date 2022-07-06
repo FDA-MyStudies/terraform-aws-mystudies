@@ -315,7 +315,7 @@ module "ec2_bastion" {
 
 
 }
-
+###############################################################################################
 
 
 
@@ -325,30 +325,37 @@ data "aws_route53_zone" "env_zone" {
   name = var.base_domain
 }
 
+###############################################################################################
+#
+# ACM - TLS Certificate
+#
+###############################################################################################
 
-
-/* Example to create ACM vs use supplied existing certificate
 module "acm" {
   source  = "terraform-aws-modules/acm/aws"
-  version = ">= 3.2.0"
+  version = ">= 4.0.1"
 
-  domain_name = "*.${local.env_dns}"
-  zone_id     = data.aws_route53_zone.env_zone.id
+  create_certificate = var.create_certificate
+  domain_name        = "*.${local.env_dns}"
+  zone_id            = data.aws_route53_zone.env_zone.id
 
   validation_method    = "DNS"
   validate_certificate = true
-  wait_for_validation  = false
+  wait_for_validation  = true
 
   subject_alternative_names = var.formation_type == "prod" ? ["*.${var.base_domain}"] : []
 
   tags = local.additional_tags
 }
-*/
+###############################################################################################
 
 
+###############################################################################################
+#
+# ALB - Application Load Balancer
+#
+###############################################################################################
 
-
-# Application Load Balancer
 module "alb" {
   source  = "terraform-aws-modules/alb/aws"
   version = ">= 6.10.0"
@@ -403,13 +410,21 @@ resource "aws_alb_listener" "alb_https_listener" {
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = var.alb_ssl_policy
-  certificate_arn   = var.alb_ssl_cert_arn
+  certificate_arn   = module.acm.acm_certificate_arn
 
   default_action {
     target_group_arn = aws_alb_target_group.default_target.arn
     type             = "forward"
   }
 }
+
+resource "aws_lb_listener_certificate" "alt_cert" {
+  count           = var.alt_alb_ssl_cert_arn != "" ? 1 : 0
+  depends_on      = [aws_alb_target_group.default_target]
+  listener_arn    = aws_alb_listener.alb_https_listener.arn
+  certificate_arn = var.alt_alb_ssl_cert_arn
+}
+###############################################################################################
 
 
 ###############################################################################################
@@ -565,7 +580,7 @@ resource "aws_ssm_parameter" "wcp_rds_master_pass" {
   tags   = local.additional_tags
 
 }
-
+###############################################################################################
 
 
 ###############################################################################################

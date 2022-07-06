@@ -27,12 +27,14 @@ module "mystudies" {
 
   debug = var.debug
 
-  alb_ssl_cert_arn                 = var.alb_ssl_cert_arn
+  alt_alb_ssl_cert_arn             = var.alt_alb_ssl_cert_arn
   alb_ssl_policy                   = var.alb_ssl_policy
+  base_domain                      = var.base_domain
   bastion_enabled                  = var.bastion_enabled
   bastion_instance_type            = var.bastion_instance_type
   bastion_user                     = var.bastion_user
   bastion_user_data                = var.bastion_user_data
+  create_certificate               = var.create_certificate
   common_tags                      = var.common_tags
   database_subnets                 = var.database_subnets
   formation                        = var.formation

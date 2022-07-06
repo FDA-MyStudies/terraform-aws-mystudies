@@ -167,6 +167,7 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_acm"></a> [acm](#module\_acm) | terraform-aws-modules/acm/aws | >= 4.0.1 |
 | <a name="module_alb"></a> [alb](#module\_alb) | terraform-aws-modules/alb/aws | >= 6.10.0 |
 | <a name="module_bastion_ssh_sg"></a> [bastion\_ssh\_sg](#module\_bastion\_ssh\_sg) | terraform-aws-modules/security-group/aws//modules/ssh | >= 4.8.0 |
 | <a name="module_common_db_subnet_group"></a> [common\_db\_subnet\_group](#module\_common\_db\_subnet\_group) | terraform-aws-modules/rds/aws//modules/db_subnet_group | >= 4.4.0 |
@@ -191,6 +192,7 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | [aws_alb_listener.alb_https_listener](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_listener) | resource |
 | [aws_alb_target_group.default_target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group) | resource |
 | [aws_kms_key.mystudies_kms_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
+| [aws_lb_listener_certificate.alt_cert](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_certificate) | resource |
 | [aws_ssm_parameter.registration_database_password](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.registration_mek](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.registration_rds_master_pass](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
@@ -215,15 +217,16 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_alb_ssl_cert_arn"></a> [alb\_ssl\_cert\_arn](#input\_alb\_ssl\_cert\_arn) | ARN of existing TLS Certificate to use with ALB | `string` | n/a | yes |
 | <a name="input_alb_ssl_policy"></a> [alb\_ssl\_policy](#input\_alb\_ssl\_policy) | n/a | `string` | `"ELBSecurityPolicy-TLS-1-2-2017-01"` | no |
+| <a name="input_alt_alb_ssl_cert_arn"></a> [alt\_alb\_ssl\_cert\_arn](#input\_alt\_alb\_ssl\_cert\_arn) | ARN of existing TLS Certificate to use with ALB | `string` | n/a | yes |
 | <a name="input_azs"></a> [azs](#input\_azs) | A list of availability zones in the region | `list(string)` | `[]` | no |
-| <a name="input_base_domain"></a> [base\_domain](#input\_base\_domain) | Base Domain used by applications to look-up hosted zone and make DNS records | `string` | `"lkpoc.labkey.com"` | no |
+| <a name="input_base_domain"></a> [base\_domain](#input\_base\_domain) | A domain name for which the certificate should be issued | `string` | `"lkpoc.labkey.com"` | no |
 | <a name="input_bastion_enabled"></a> [bastion\_enabled](#input\_bastion\_enabled) | Set to false to prevent the module from creating bastion instance resources | `bool` | `null` | no |
 | <a name="input_bastion_instance_type"></a> [bastion\_instance\_type](#input\_bastion\_instance\_type) | Bastion instance type | `string` | `"t3.micro"` | no |
 | <a name="input_bastion_user"></a> [bastion\_user](#input\_bastion\_user) | IAM user for logging into the bastion host | `string` | `"ec2-user"` | no |
 | <a name="input_bastion_user_data"></a> [bastion\_user\_data](#input\_bastion\_user\_data) | Bastion Instance User data content | `list(string)` | `[]` | no |
 | <a name="input_common_tags"></a> [common\_tags](#input\_common\_tags) | Set of tags to apply to resources | `map(any)` | n/a | yes |
+| <a name="input_create_certificate"></a> [create\_certificate](#input\_create\_certificate) | Whether to create ACM certificate | `bool` | `true` | no |
 | <a name="input_database_subnets"></a> [database\_subnets](#input\_database\_subnets) | list of database subnets to use when creating vpc | `list(string)` | n/a | yes |
 | <a name="input_debug"></a> [debug](#input\_debug) | whether to increase verbosity of shell scripts or not | `bool` | `false` | no |
 | <a name="input_formation"></a> [formation](#input\_formation) | Name of VPC and associated resources, used in config paths | `any` | n/a | yes |
@@ -255,6 +258,9 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 
 | Name | Description |
 |------|-------------|
+| <a name="output_acm_certificate_arn"></a> [acm\_certificate\_arn](#output\_acm\_certificate\_arn) | The ARN of the certificate |
+| <a name="output_acm_certificate_domain_validation_options"></a> [acm\_certificate\_domain\_validation\_options](#output\_acm\_certificate\_domain\_validation\_options) | A list of attributes to feed into other resources to complete certificate validation. Can have more than one element, e.g. if SANs are defined. Only set if DNS-validation was used. |
+| <a name="output_acm_certificate_status"></a> [acm\_certificate\_status](#output\_acm\_certificate\_status) | Status of the certificate. |
 | <a name="output_base_domain"></a> [base\_domain](#output\_base\_domain) | n/a |
 | <a name="output_bastion_arn"></a> [bastion\_arn](#output\_bastion\_arn) | ARN of the bastion instance |
 | <a name="output_bastion_id"></a> [bastion\_id](#output\_bastion\_id) | Disambiguated ID of the bastion instance |
@@ -267,6 +273,7 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="output_bastion_role"></a> [bastion\_role](#output\_bastion\_role) | Name of AWS IAM Role associated with the instance |
 | <a name="output_bastion_security_group_ids"></a> [bastion\_security\_group\_ids](#output\_bastion\_security\_group\_ids) | Bastion Security group IDs |
 | <a name="output_bastion_ssh_user"></a> [bastion\_ssh\_user](#output\_bastion\_ssh\_user) | Default Username to ssh to bastion instance |
+| <a name="output_distinct_domain_names"></a> [distinct\_domain\_names](#output\_distinct\_domain\_names) | List of distinct domains names used for the validation. |
 | <a name="output_igw_id"></a> [igw\_id](#output\_igw\_id) | Internet gateway ID of the deployed VPC |
 | <a name="output_registration_db_az"></a> [registration\_db\_az](#output\_registration\_db\_az) | n/a |
 | <a name="output_registration_db_id"></a> [registration\_db\_id](#output\_registration\_db\_id) | n/a |
@@ -280,6 +287,8 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="output_response_db_sg_id"></a> [response\_db\_sg\_id](#output\_response\_db\_sg\_id) | n/a |
 | <a name="output_response_mek"></a> [response\_mek](#output\_response\_mek) | n/a |
 | <a name="output_response_rds_master_pass"></a> [response\_rds\_master\_pass](#output\_response\_rds\_master\_pass) | n/a |
+| <a name="output_validation_domains"></a> [validation\_domains](#output\_validation\_domains) | List of distinct domain validation options. This is useful if subject alternative names contain wildcards. |
+| <a name="output_validation_route53_record_fqdns"></a> [validation\_route53\_record\_fqdns](#output\_validation\_route53\_record\_fqdns) | List of FQDNs built using the zone domain and name. |
 | <a name="output_vpc_alb_arn"></a> [vpc\_alb\_arn](#output\_vpc\_alb\_arn) | ARN of the deployed Application Load Balancer |
 | <a name="output_vpc_arn"></a> [vpc\_arn](#output\_vpc\_arn) | ARN of the deployed VPC |
 | <a name="output_vpc_cidr"></a> [vpc\_cidr](#output\_vpc\_cidr) | CIDR of the deployed VPC |
