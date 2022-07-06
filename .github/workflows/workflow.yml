@@ -22,14 +22,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Generate Module Docs
-        uses: terraform-docs/gh-actions@v0.10.0
+        uses: terraform-docs/gh-actions@v1.0.0
         with:
           working-dir: .
           output-file: README.md
           git-push: true
 
       - name: Generate Example Module Docs
-        uses: terraform-docs/gh-actions@v0.10.0
+        uses: terraform-docs/gh-actions@v1.0.0
         with:
           working-dir: examples/sample-deployment
           output-file: README.md
@@ -40,20 +40,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check Out Code
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.0.5
+          terraform_version: ~1
 
       - name: Terraform Format
-        run: terraform fmt -check
+        run: terraform fmt -check -diff
 
-      - uses: terraform-linters/setup-tflint@v1
-        name: Setup TFLint
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v2
         with:
-          tflint_version: v0.29.0
+          tflint_version: v0.37.0
 
       - name: Init TFLint
         run: tflint --init
@@ -61,45 +61,18 @@ jobs:
       - name: Run TFLint
         run: tflint -f compact
 
-  # tfsec:
-  #   name: tfsec
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Check Out Code
-  #       uses: actions/checkout@v1
-
-  #     - name: tfsec
-  #       uses: tfsec/tfsec-pr-commenter-action@main
-  #       with:
-  #         github_token: ${{ github.GITHUB_TOKEN }}
-
-  #     - name: tfsec
-  #       uses: tfsec/tfsec-sarif-action@master
-  #       with:
-  #         sarif_file: tfsec.sarif
-
-  #     - name: Upload SARIF file
-  #       uses: github/codeql-action/upload-sarif@v1
-  #       with:
-  #         sarif_file: terrascan.sarif
-
   terrascan:
     name: terrascan
     runs-on: ubuntu-latest
     steps:
       - name: Check Out Code
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
 
       - name: Run Terrascan
-        uses: accurics/terrascan-action@v1.3.0
+        uses: accurics/terrascan-action@v1.4.1
         with:
           iac_type: 'terraform'
           policy_type: 'aws'
           verbose: true
           only_warn: true
-      #     sarif_upload: true
 
-      # - name: Upload SARIF file
-      #   uses: github/codeql-action/upload-sarif@v1
-      #   with:
-      #     sarif_file: terrascan.sarif
