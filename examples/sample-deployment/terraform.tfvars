@@ -1,5 +1,8 @@
 
-base_domain = "lkpoc.labkey.com"
+base_domain = "dev.labkey.name"
+
+# Set to true to create ACM TLS/TLS Cent for base_domain - Set to False to disable cert
+create_certificate = true
 
 vpc_cidr = "10.110.0.0/16"
 
@@ -12,7 +15,8 @@ public_subnets = ["10.110.101.0/24", "10.110.102.0/24", "10.110.103.0/24"]
 
 database_subnets = ["10.110.201.0/24", "10.110.202.0/24", "10.110.203.0/24"]
 
-alb_ssl_cert_arn = "arn:aws:acm:us-west-2:454841571423:certificate/fdc7e2c1-8a32-4aab-99be-56081f2cd9bc"
+# Allows alternate or additional TLS/SSL Cert other than default OR to override default and use an existing certificate
+alt_alb_ssl_cert_arn = "arn:aws:acm:us-west-2:454841571423:certificate/fdc7e2c1-8a32-4aab-99be-56081f2cd9bc"
 
 alb_ssl_policy = "ELBSecurityPolicy-TLS-1-2-2017-01"
 
@@ -34,7 +38,7 @@ bastion_instance_type = "t3a.nano"
 
 # Applies latest linux patches and installs ncat which is used to allow ssh through bastion instance to target instance
 bastion_user_data = [
-"yum update -y && yum install -y nmap-ncat"
+  "yum update -y && yum install -y nmap-ncat"
 ]
 
 

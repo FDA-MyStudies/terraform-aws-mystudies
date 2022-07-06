@@ -171,18 +171,25 @@ variable "office_cidr_B" {
 
 // Base Domain used by applications to look-up hosted zone and make DNS records
 variable "base_domain" {
-  default = "lkpoc.labkey.com" //Development domain
+  default     = "lkpoc.labkey.com" //Development domain
+  description = "A domain name for which the certificate should be issued"
+  type        = string
 }
 
+variable "create_certificate" {
+  description = "Whether to create ACM certificate"
+  type        = bool
+  default     = true
+}
 
 variable "common_tags" {
   description = "Set of tags to apply to resources"
   type        = map(any)
 }
 
-variable "alb_ssl_cert_arn" {
+variable "alt_alb_ssl_cert_arn" {
   type        = string
-  description = "ARN of existing TLS Certificate to use with ALB "
+  description = "ARN of existing TLS Certificate to use with ALB"
 }
 
 variable "alb_ssl_policy" {
