@@ -16,15 +16,27 @@ alb_ssl_cert_arn = "arn:aws:acm:us-west-2:454841571423:certificate/fdc7e2c1-8a32
 
 alb_ssl_policy = "ELBSecurityPolicy-TLS-1-2-2017-01"
 
-office_cidr_A = "199.76.89.158/32"
+office_cidr_A = "144.202.87.91/32"
 
-office_cidr_B = "199.76.89.152/32"
+office_cidr_B = "131.226.35.101/32"
+
+keypair_name = "4c2795d-20210823"
 
 #private_key_path = ""
 
 formation = "mystudies"
 
 formation_type = "dev"
+
+bastion_enabled = "true"
+
+bastion_instance_type = "t3a.nano"
+
+# Applies latest linux patches and installs ncat which is used to allow ssh through bastion instance to target instance
+bastion_user_data = [
+"yum update -y && yum install -y nmap-ncat"
+]
+
 
 common_tags = {
   Client = "labkey"
