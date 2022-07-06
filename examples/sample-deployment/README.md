@@ -30,7 +30,10 @@ No resources.
 | <a name="input_alb_ssl_policy"></a> [alb\_ssl\_policy](#input\_alb\_ssl\_policy) | n/a | `string` | `"ELBSecurityPolicy-TLS-1-2-2017-01"` | no |
 | <a name="input_azs"></a> [azs](#input\_azs) | A list of availability zones in the region | `list(string)` | `[]` | no |
 | <a name="input_base_domain"></a> [base\_domain](#input\_base\_domain) | Base Domain used by applications to look-up hosted zone and make DNS records | `string` | `"lkpoc.labkey.com"` | no |
+| <a name="input_bastion_enabled"></a> [bastion\_enabled](#input\_bastion\_enabled) | Set to false to prevent the module from creating bastion instance resources | `bool` | `null` | no |
+| <a name="input_bastion_instance_type"></a> [bastion\_instance\_type](#input\_bastion\_instance\_type) | Bastion instance type | `string` | `"t3.micro"` | no |
 | <a name="input_bastion_user"></a> [bastion\_user](#input\_bastion\_user) | IAM user for logging into the bastion host | `string` | `"ec2-user"` | no |
+| <a name="input_bastion_user_data"></a> [bastion\_user\_data](#input\_bastion\_user\_data) | Bastion Instance User data content | `list(string)` | `[]` | no |
 | <a name="input_common_tags"></a> [common\_tags](#input\_common\_tags) | Set of tags to apply to resources | `map(any)` | n/a | yes |
 | <a name="input_database_subnets"></a> [database\_subnets](#input\_database\_subnets) | list of database subnets to use when creating vpc | `list(string)` | n/a | yes |
 | <a name="input_debug"></a> [debug](#input\_debug) | whether to increase verbosity of shell scripts or not | `bool` | `false` | no |
@@ -64,7 +67,18 @@ No resources.
 | Name | Description |
 |------|-------------|
 | <a name="output_base_domain"></a> [base\_domain](#output\_base\_domain) | n/a |
-| <a name="output_igw_id"></a> [igw\_id](#output\_igw\_id) | n/a |
+| <a name="output_bastion_arn"></a> [bastion\_arn](#output\_bastion\_arn) | ARN of the bastion instance |
+| <a name="output_bastion_id"></a> [bastion\_id](#output\_bastion\_id) | Disambiguated ID of the bastion instance |
+| <a name="output_bastion_instance_id"></a> [bastion\_instance\_id](#output\_bastion\_instance\_id) | Bastion Instance ID |
+| <a name="output_bastion_name"></a> [bastion\_name](#output\_bastion\_name) | Bastion Instance name |
+| <a name="output_bastion_private_dns"></a> [bastion\_private\_dns](#output\_bastion\_private\_dns) | Private DNS of bastion instance |
+| <a name="output_bastion_private_ip"></a> [bastion\_private\_ip](#output\_bastion\_private\_ip) | Private IP of the bastion instance |
+| <a name="output_bastion_public_dns"></a> [bastion\_public\_dns](#output\_bastion\_public\_dns) | Public DNS of bastion instance (or DNS of EIP) |
+| <a name="output_bastion_public_ip"></a> [bastion\_public\_ip](#output\_bastion\_public\_ip) | Public IP of the bastion instance (or EIP) |
+| <a name="output_bastion_role"></a> [bastion\_role](#output\_bastion\_role) | Name of AWS IAM Role associated with the instance |
+| <a name="output_bastion_security_group_ids"></a> [bastion\_security\_group\_ids](#output\_bastion\_security\_group\_ids) | Bastion Security group IDs |
+| <a name="output_bastion_ssh_user"></a> [bastion\_ssh\_user](#output\_bastion\_ssh\_user) | Default Username to ssh to bastion instance |
+| <a name="output_igw_id"></a> [igw\_id](#output\_igw\_id) | Internet gateway ID of the deployed VPC |
 | <a name="output_registration_db_az"></a> [registration\_db\_az](#output\_registration\_db\_az) | n/a |
 | <a name="output_registration_db_id"></a> [registration\_db\_id](#output\_registration\_db\_id) | n/a |
 | <a name="output_registration_db_password"></a> [registration\_db\_password](#output\_registration\_db\_password) | n/a |
@@ -77,10 +91,10 @@ No resources.
 | <a name="output_response_db_sg_id"></a> [response\_db\_sg\_id](#output\_response\_db\_sg\_id) | n/a |
 | <a name="output_response_mek"></a> [response\_mek](#output\_response\_mek) | n/a |
 | <a name="output_response_rds_master_pass"></a> [response\_rds\_master\_pass](#output\_response\_rds\_master\_pass) | n/a |
-| <a name="output_vpc_alb_arn"></a> [vpc\_alb\_arn](#output\_vpc\_alb\_arn) | n/a |
-| <a name="output_vpc_arn"></a> [vpc\_arn](#output\_vpc\_arn) | n/a |
-| <a name="output_vpc_cidr"></a> [vpc\_cidr](#output\_vpc\_cidr) | n/a |
-| <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | n/a |
+| <a name="output_vpc_alb_arn"></a> [vpc\_alb\_arn](#output\_vpc\_alb\_arn) | ARN of the deployed Application Load Balancer |
+| <a name="output_vpc_arn"></a> [vpc\_arn](#output\_vpc\_arn) | ARN of the deployed VPC |
+| <a name="output_vpc_cidr"></a> [vpc\_cidr](#output\_vpc\_cidr) | CIDR of the deployed VPC |
+| <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | ID of the deployed VPC |
 | <a name="output_wcp_db_az"></a> [wcp\_db\_az](#output\_wcp\_db\_az) | n/a |
 | <a name="output_wcp_db_id"></a> [wcp\_db\_id](#output\_wcp\_db\_id) | n/a |
 | <a name="output_wcp_db_password"></a> [wcp\_db\_password](#output\_wcp\_db\_password) | n/a |
