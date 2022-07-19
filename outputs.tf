@@ -175,6 +175,17 @@ output "response_db_sg_id" {
   value = module.response_psql_sg.security_group_id
 }
 
+output "response_private_ip" {
+  value       = aws_instance.response.private_ip
+  description = "Public IP of the bastion instance (or EIP)"
+}
+
+output "response_instance_id" {
+  value       = aws_instance.response.id
+  description = "Public IP of the bastion instance (or EIP)"
+}
+
+
 output "registration_db_id" {
   value = module.registration_db.db_instance_id
 }

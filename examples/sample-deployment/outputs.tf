@@ -133,6 +133,17 @@ output "response_db_password" {
   sensitive = true
 }
 
+output "response_private_ip" {
+  value       = module.mystudies.response_private_ip
+  description = "Public IP of the bastion instance (or EIP)"
+}
+
+output "response_instance_id" {
+  value       = module.mystudies.response_instance_id
+  description = "Public IP of the bastion instance (or EIP)"
+}
+
+
 output "response_rds_master_pass" {
   value     = module.mystudies.response_rds_master_pass
   sensitive = true

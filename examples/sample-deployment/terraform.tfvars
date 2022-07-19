@@ -24,9 +24,11 @@ office_cidr_A = "144.202.87.91/32"
 
 office_cidr_B = "131.226.35.101/32"
 
-keypair_name = "4c2795d-20210823"
+appserver_private_key = "4c2795d-20210823"
 
-#private_key_path = ""
+bastion_private_key = "4c2795d-20210823"
+
+private_key_path = "~/.keys/syseng-dev"
 
 formation = "mystudies"
 
@@ -50,6 +52,20 @@ s3_state_bucket = "tf.syseng.labkey.com"
 
 s3_state_region = "us-west-2"
 
+# Set to null to disable response server ebs data volume - otherwise enter a value in GB
+response_ebs_size = "16"
+
+# Snapshot ID used as source for response ebs data volume - Null = empty volume
+response_ebs_data_snapshot_identifier = ""
+
+response_env_data = {
+  LABKEY_APP_HOME             = "/labkey",
+  LABKEY_FILES_ROOT           = "/labkey/labkey/files",
+  TOMCAT_USE_PRIVILEGED_PORTS = "TRUE",
+  LABKEY_HTTP_PORT            = "80",
+  LABKEY_HTTPS_PORT           = "443"
+}
+
 # Deploy Response RDS DB Instance
 response_use_rds = false
 
@@ -62,3 +78,4 @@ wcp_use_rds = false
 # Use Common RDS Subnet Group for RDS instances
 use_common_rds_subnet_group = true
 
+debug = false

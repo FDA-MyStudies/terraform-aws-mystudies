@@ -41,7 +41,7 @@ module "mystudies" {
   formation_type                   = var.formation_type
   install_script_repo_branch       = var.install_script_repo_branch
   install_script_repo_url          = var.install_script_repo_url
-  keypair_name                     = var.keypair_name
+  bastion_private_key              = var.bastion_private_key
   office_cidr_A                    = var.office_cidr_A
   office_cidr_B                    = var.office_cidr_B
   private_key_path                 = var.private_key_path
@@ -50,6 +50,8 @@ module "mystudies" {
   registration_snapshot_identifier = var.registration_snapshot_identifier
   registration_use_rds             = var.registration_use_rds
   response_snapshot_identifier     = var.response_snapshot_identifier
+  response_ebs_size                = var.response_ebs_size
+  appserver_private_key            = var.appserver_private_key
   response_use_rds                 = var.response_use_rds
   security_group_ids               = var.security_group_ids
   subnet_id                        = var.subnet_id

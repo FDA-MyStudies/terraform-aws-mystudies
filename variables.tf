@@ -33,10 +33,17 @@ variable "security_group_ids" {
 #   description = "id of the vpc within which to create the infrastructure"
 # }
 
-variable "keypair_name" {
+variable "bastion_private_key" {
   type        = string
-  description = "name of existing keypair to use when creating EC2"
+  description = "Name of private key used to ssh to bastion server"
 }
+
+variable "appserver_private_key" {
+  type        = string
+  default     = ""
+  description = "Name of private key used to ssh to appserver"
+}
+
 
 variable "private_subnets" {
   type        = list(string)
@@ -79,7 +86,7 @@ variable "subnet_id" {
 
 variable "private_key_path" {
   type        = string
-  description = "path to the ssh private key used for provisioning instances"
+  description = "Local path to private keys used for provisioning instances"
 }
 
 variable "install_script_repo_url" {
@@ -149,6 +156,7 @@ variable "bastion_user_data" {
 }
 
 
+
 variable "user" {
   type        = string
   default     = ""
@@ -197,6 +205,30 @@ variable "alb_ssl_policy" {
   # http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-security-policy-table.html
   default = "ELBSecurityPolicy-TLS-1-2-2017-01"
 }
+variable "ebs_vol_type" {
+  type        = string
+  default     = "gp3"
+  description = "EBS data volume type - Standard, gp2, gp3, io1, io2, sc1 or sct1"
+}
+
+variable "response_ebs_size" {
+  type        = string
+  default     = null
+  description = "Response EBS data volume size"
+}
+
+variable "response_ebs_data_snapshot_identifier" {
+  type        = string
+  default     = null
+  description = "Snapshot Id to create the response ebs data volume from"
+}
+
+variable "response_env_data" {
+  type        = map(string)
+  default     = {}
+  description = "Response Instance Environment data content - used to pass in installation env settings"
+}
+
 
 variable "use_common_rds_subnet_group" {
   type        = bool

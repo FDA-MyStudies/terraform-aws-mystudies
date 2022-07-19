@@ -45,6 +45,11 @@ locals {
   name_type          = var.formation_type
   env_dns            = var.base_domain
   ssm_parameter_path = "/${var.formation}/${var.formation_type}"
+  server_key         = file("${var.private_key_path}/${var.appserver_private_key}.pem")
+  bastion_key        = file("${var.private_key_path}/${var.bastion_private_key}.pem")
+
+  response_dns_shortname = "response-${local.name_prefix}"
+
   additional_tags = merge(var.common_tags, tomap({
     Prefix      = local.name_prefix
     Environment = var.formation_type
@@ -142,14 +147,15 @@ module "endpoints" {
 #
 ###############################################################################################
 
+# TODO seems redundant to office_ssh_sg
 module "bastion_ssh_sg" {
   source  = "terraform-aws-modules/security-group/aws//modules/ssh"
   version = ">= 4.8.0"
   # https://github.com/terraform-aws-modules/terraform-aws-security-group
 
-  name        = "${var.formation}-${var.formation_type}-alb-http"
+  name        = "${var.formation}-${var.formation_type}-bastion-sg"
   vpc_id      = module.vpc.vpc_id
-  description = "Security group with HTTP ports open for everybody (IPv4 CIDR), egress ports are all world open"
+  description = "Security group with SSH ports open for SSH), egress ports are all world open"
 
   ingress_cidr_blocks = [var.office_cidr_A, var.office_cidr_B]
 
@@ -180,6 +186,20 @@ module "lb_https_sg" {
   description = "Security group with HTTPS ports open for everybody (IPv4 CIDR), egress ports are all world open"
 
   ingress_cidr_blocks = ["0.0.0.0/0"]
+
+  tags = local.additional_tags
+}
+
+module "http_private_sg" {
+  source  = "terraform-aws-modules/security-group/aws//modules/http-80"
+  version = ">= 4.8.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-security-group
+
+  name        = "${var.formation}-${var.formation_type}-private-http"
+  vpc_id      = module.vpc.vpc_id
+  description = "Security group with HTTPS ports open for private VPC subnets"
+
+  ingress_cidr_blocks = var.private_subnets
 
   tags = local.additional_tags
 }
@@ -286,6 +306,34 @@ module "wcp_mysql_sg" {
   )
 }
 
+module "appserver_ssh_sg" {
+  source  = "terraform-aws-modules/security-group/aws//modules/ssh"
+  version = ">= 4.8.0"
+  # https://github.com/terraform-aws-modules/terraform-aws-security-group
+
+  # skip creation if user has supplied own security groups list
+  #create = local.create_sg
+
+  name   = "${local.name_prefix}-appserver-ssh-sg"
+  vpc_id = module.vpc.vpc_id
+  #  vpc_id = var.vpc_id
+
+  description = "Security group to allow SSH ports open for bastion/office (IPv4 CIDRs)"
+
+  ingress_cidr_blocks = tolist([var.office_cidr_A, var.office_cidr_B, "${module.ec2_bastion.private_ip}/32"])
+
+  tags = merge(
+    local.additional_tags,
+    {
+      Name = "${local.name_prefix}-appserver-ssh-sg"
+    },
+  )
+}
+
+
+
+
+
 ###############################################################################################
 #
 # Bastion Instance - used to provide ssh to instance and Terraform Remote Exec Provisioning
@@ -302,7 +350,7 @@ module "ec2_bastion" {
 
   associate_public_ip_address = true
   instance_type               = var.bastion_instance_type
-  key_name                    = var.keypair_name
+  key_name                    = var.bastion_private_key
   name                        = "JUMPBOX"
   namespace                   = var.formation
   security_group_enabled      = false
@@ -759,19 +807,18 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"]
 }
 
-/*
+
 resource "aws_instance" "response" {
 
   ami           = data.aws_ami.ubuntu.id
   instance_type = local.instance_type
+  # key_name used in ec2 console
+  key_name = var.appserver_private_key
 
-  # key_name = module.keypair["response"].key_pair_key_name
-  key_name = var.keypair_name
-
-  subnet_id = var.subnet_id
+  subnet_id = module.vpc.private_subnets[0]
 
   # security_groups = flatten([module.alb_https_sg.this_security_group_id, module.alb_http_sg.this_security_group_id, var.security_group_ids])
-  security_groups = flatten([var.security_group_ids])
+  security_groups = [module.appserver_ssh_sg.security_group_id, module.https_private_sg.security_group_id]
 
   tags = merge(
     local.additional_tags,
@@ -780,23 +827,39 @@ resource "aws_instance" "response" {
     },
   )
 
+  volume_tags = merge(
+    var.common_tags,
+    {
+      "Name" = "${local.name_prefix}-response-volume"
+    },
+  )
+
   lifecycle {
-    ignore_changes = [tags]
+    ignore_changes = [
+      tags,
+      disable_api_termination,
+      iam_instance_profile,
+    ebs_optimized, ]
+  }
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+    instance_metadata_tags      = "enabled"
   }
 
   connection {
     type = "ssh"
     user = "ubuntu"
+    # local file path to private key
+    private_key = local.server_key
 
-    # must either be the key named above for creating the instance
-    private_key = file(var.private_key_path)
+    host = coalesce(self.public_ip, self.private_ip)
 
-    # host = private_dns
-    host = aws_instance.response.public_dns
-
-    # bastion_host        = local.bastion_host
-    # bastion_user        = local.bastion_user
-    # bastion_private_key = local.bastion_key
+    bastion_host        = module.ec2_bastion.public_dns
+    bastion_user        = module.ec2_bastion.ssh_user
+    bastion_private_key = local.bastion_key
   }
 
   provisioner "remote-exec" {
@@ -807,15 +870,24 @@ resource "aws_instance" "response" {
           script_name = "labkey"
           debug       = var.debug
           environment = {
-            LABKEY_APP_HOME     = local.labkey_app_home
-            LABKEY_FILES_ROOT   = local.labkey_files_root
-            LABKEY_COMPANY_NAME = local.labkey_company_name
-
-            LABKEY_BASE_SERVER_URL = "https://localhost"
-
-            LABKEY_SYSTEM_DESCRIPTION = "MyStudies Response Server"
-
-            TOMCAT_INSTALL_TYPE = "Standard"
+            LABKEY_APP_HOME                                  = "/labkey"
+            LABKEY_BASE_SERVER_URL                           = "https://${local.response_dns_shortname}.${var.base_domain}"
+            LABKEY_COMPANY_NAME                              = local.labkey_company_name
+            LABKEY_DISTRIBUTION                              = "community"
+            LABKEY_DIST_FILENAME                             = "LabKey22.3.4-6-community.tar.gz"
+            LABKEY_DIST_URL                                  = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
+            LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
+            LABKEY_HTTPS_PORT                                = "443"
+            LABKEY_HTTP_PORT                                 = "80"
+            LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
+            LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
+            LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
+            LABKEY_SYSTEM_DESCRIPTION                        = "MyStudies Response Server"
+            LABKEY_VERSION                                   = "22.3.4"
+            POSTGRES_SVR_LOCAL                               = "TRUE"
+            TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
+            TOMCAT_INSTALL_TYPE                              = "Standard"
+            TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
           }
           url    = var.install_script_repo_url
           branch = var.install_script_repo_branch
@@ -824,7 +896,32 @@ resource "aws_instance" "response" {
     ]
   }
 }
-*/
+
+resource "aws_ebs_volume" "response_ebs_data" {
+  # deploy only if response_ebs_size has a value of > Null
+  count = var.response_ebs_size != "" ? 1 : 0
+
+  availability_zone = data.aws_availability_zones.available.names[0]
+  size              = var.response_ebs_size
+  encrypted         = true
+  snapshot_id       = var.response_ebs_data_snapshot_identifier
+  type              = var.ebs_vol_type
+  tags              = local.additional_tags
+}
+
+resource "aws_volume_attachment" "response_ebs_vol_attachment" {
+  count = var.response_ebs_size != "" ? 1 : 0
+
+  device_name = "/dev/sdf"
+  volume_id   = aws_ebs_volume.response_ebs_data[0].id
+  instance_id = aws_instance.response.id
+}
+
+# TODO add response server dns record and outputs
+# TODO consider adding NULL Resource to call a script to format and mount EBS Volume
+
+
+
 
 # resource "aws_instance" "registration" {
 
@@ -871,5 +968,7 @@ resource "aws_instance" "response" {
 #     EOT
 #   }
 # }
+
+# TODO consider creating NULL Resource to create a ssh_config file
 
 
