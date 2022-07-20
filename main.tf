@@ -349,18 +349,21 @@ module "ec2_bastion" {
   enabled = var.bastion_enabled
 
 
-  associate_public_ip_address = true
-  instance_type               = var.bastion_instance_type
-  key_name                    = var.bastion_private_key
-  name                        = "JUMPBOX"
-  namespace                   = var.formation
-  security_group_enabled      = false
-  security_groups             = [module.bastion_ssh_sg.security_group_id]
-  ssh_user                    = var.bastion_user
-  subnets                     = module.vpc.public_subnets
-  tags                        = local.additional_tags
-  user_data                   = var.bastion_user_data
-  vpc_id                      = module.vpc.vpc_id
+  associate_public_ip_address          = true
+  instance_type                        = var.bastion_instance_type
+  key_name                             = var.bastion_private_key
+  metadata_http_endpoint_enabled       = true
+  metadata_http_put_response_hop_limit = 1
+  metadata_http_tokens_required        = true
+  name                                 = "JUMPBOX"
+  namespace                            = var.formation
+  security_group_enabled               = false
+  security_groups                      = [module.bastion_ssh_sg.security_group_id]
+  ssh_user                             = var.bastion_user
+  subnets                              = module.vpc.public_subnets
+  tags                                 = local.additional_tags
+  user_data                            = var.bastion_user_data
+  vpc_id                               = module.vpc.vpc_id
 
 
 }
