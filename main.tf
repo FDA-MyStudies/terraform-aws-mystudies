@@ -49,6 +49,7 @@ locals {
   bastion_key        = file("${var.private_key_path}/${var.bastion_private_key}.pem")
 
   response_dns_shortname = "response-${local.name_prefix}"
+  response_fqdn          = "${local.response_dns_shortname}.${var.base_domain}"
 
   additional_tags = merge(var.common_tags, tomap({
     Prefix      = local.name_prefix
@@ -199,7 +200,7 @@ module "http_private_sg" {
   vpc_id      = module.vpc.vpc_id
   description = "Security group with HTTPS ports open for private VPC subnets"
 
-  ingress_cidr_blocks = var.private_subnets
+  ingress_cidr_blocks = [var.vpc_cidr]
 
   tags = local.additional_tags
 }
@@ -213,7 +214,7 @@ module "https_private_sg" {
   vpc_id      = module.vpc.vpc_id
   description = "Security group with HTTPS ports open for private VPC subnets"
 
-  ingress_cidr_blocks = var.private_subnets
+  ingress_cidr_blocks = [var.vpc_cidr]
 
   tags = local.additional_tags
 }
@@ -818,7 +819,7 @@ resource "aws_instance" "response" {
   subnet_id = module.vpc.private_subnets[0]
 
   # security_groups = flatten([module.alb_https_sg.this_security_group_id, module.alb_http_sg.this_security_group_id, var.security_group_ids])
-  security_groups = [module.appserver_ssh_sg.security_group_id, module.https_private_sg.security_group_id]
+  vpc_security_group_ids = compact([module.appserver_ssh_sg.security_group_id, module.https_private_sg.security_group_id])
 
   tags = merge(
     local.additional_tags,
@@ -828,7 +829,7 @@ resource "aws_instance" "response" {
   )
 
   volume_tags = merge(
-    var.common_tags,
+    local.additional_tags,
     {
       "Name" = "${local.name_prefix}-response-volume"
     },
@@ -871,7 +872,7 @@ resource "aws_instance" "response" {
           debug       = var.debug
           environment = {
             LABKEY_APP_HOME                                  = "/labkey"
-            LABKEY_BASE_SERVER_URL                           = "https://${local.response_dns_shortname}.${var.base_domain}"
+            LABKEY_BASE_SERVER_URL                           = "https://${local.response_fqdn}"
             LABKEY_COMPANY_NAME                              = local.labkey_company_name
             LABKEY_DISTRIBUTION                              = "community"
             LABKEY_DIST_FILENAME                             = "LabKey22.3.4-6-community.tar.gz"
@@ -906,7 +907,12 @@ resource "aws_ebs_volume" "response_ebs_data" {
   encrypted         = true
   snapshot_id       = var.response_ebs_data_snapshot_identifier
   type              = var.ebs_vol_type
-  tags              = local.additional_tags
+  tags = merge(
+    local.additional_tags,
+    {
+      "Name" = "${local.name_prefix}-response-data-volume"
+    },
+  )
 }
 
 resource "aws_volume_attachment" "response_ebs_vol_attachment" {
@@ -919,6 +925,66 @@ resource "aws_volume_attachment" "response_ebs_vol_attachment" {
 
 # TODO add response server dns record and outputs
 # TODO consider adding NULL Resource to call a script to format and mount EBS Volume
+
+
+
+
+resource "aws_alb_target_group" "mystudies_response_target_https" {
+  name     = "${var.formation_type}-vpc-${var.formation}-response-https"
+  port     = 443
+  protocol = "HTTPS"
+  vpc_id   = module.vpc.vpc_id
+
+  health_check {
+    protocol = "HTTPS"
+
+    //TODO make variable
+    healthy_threshold   = 2
+    interval            = 15
+    path                = var.response_target_group_path
+    matcher             = "200,302"
+    timeout             = 5
+    unhealthy_threshold = 5
+  }
+
+  tags = local.additional_tags
+}
+
+resource "aws_alb_target_group_attachment" "response_attachment_https" {
+  target_group_arn = aws_alb_target_group.mystudies_response_target_https.arn
+  target_id        = aws_instance.response.id
+  port             = 443
+}
+
+resource "aws_alb_listener_rule" "resp_listener_rule_https" {
+  listener_arn = aws_alb_listener.alb_https_listener.arn
+  depends_on   = [aws_alb_target_group.mystudies_response_target_https]
+  #priority     = var.rule_priority //Required but there is no way to query for next priority
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_alb_target_group.mystudies_response_target_https.arn
+  }
+
+  condition {
+    host_header {
+      values = [local.response_fqdn]
+    }
+  }
+}
+
+resource "aws_route53_record" "response_alias_route" {
+
+  zone_id = data.aws_route53_zone.env_zone.zone_id
+  name    = local.response_dns_shortname
+  type    = "A"
+
+  alias {
+    name                   = module.alb.lb_dns_name
+    zone_id                = module.alb.lb_zone_id
+    evaluate_target_health = false
+  }
+}
 
 
 

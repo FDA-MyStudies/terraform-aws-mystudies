@@ -51,6 +51,7 @@ module "mystudies" {
   registration_use_rds             = var.registration_use_rds
   response_snapshot_identifier     = var.response_snapshot_identifier
   response_ebs_size                = var.response_ebs_size
+  response_target_group_path       = var.response_target_group_path
   appserver_private_key            = var.appserver_private_key
   response_use_rds                 = var.response_use_rds
   security_group_ids               = var.security_group_ids

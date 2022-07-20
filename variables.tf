@@ -229,6 +229,11 @@ variable "response_env_data" {
   description = "Response Instance Environment data content - used to pass in installation env settings"
 }
 
+variable "response_target_group_path" {
+  type        = string
+  description = "Path used for healthcheck"
+  default     = "/"
+}
 
 variable "use_common_rds_subnet_group" {
   type        = bool

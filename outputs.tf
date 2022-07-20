@@ -180,6 +180,16 @@ output "response_private_ip" {
   description = "Public IP of the bastion instance (or EIP)"
 }
 
+output "response_fqdn" {
+  value       = element(concat(aws_route53_record.response_alias_route.*.fqdn, [""]), 0)
+  description = "Response server fully qualified domain name"
+}
+
+output "response_url" {
+  value       = "https://${element(concat(aws_route53_record.response_alias_route.*.fqdn, [""]), 0)}"
+  description = "Response Server URL"
+}
+
 output "response_instance_id" {
   value       = aws_instance.response.id
   description = "Public IP of the bastion instance (or EIP)"

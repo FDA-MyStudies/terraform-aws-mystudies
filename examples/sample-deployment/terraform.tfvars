@@ -66,6 +66,9 @@ response_env_data = {
   LABKEY_HTTPS_PORT           = "443"
 }
 
+#response_target_group_path =""
+
+
 # Deploy Response RDS DB Instance
 response_use_rds = false
 

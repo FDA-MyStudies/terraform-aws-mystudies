@@ -133,6 +133,16 @@ output "response_db_password" {
   sensitive = true
 }
 
+output "response_fqdn" {
+  value       = module.mystudies.response_fqdn
+  description = "Response server fully qualified domain name"
+}
+
+output "response_url" {
+  value       = module.mystudies.response_url
+  description = "Response server URL"
+}
+
 output "response_private_ip" {
   value       = module.mystudies.response_private_ip
   description = "Public IP of the bastion instance (or EIP)"
