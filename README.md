@@ -192,11 +192,15 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | Name | Type |
 |------|------|
 | [aws_alb_listener.alb_https_listener](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_listener) | resource |
+| [aws_alb_listener_rule.resp_listener_rule_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_listener_rule) | resource |
 | [aws_alb_target_group.default_target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group) | resource |
+| [aws_alb_target_group.mystudies_response_target_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group) | resource |
+| [aws_alb_target_group_attachment.response_attachment_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group_attachment) | resource |
 | [aws_ebs_volume.response_ebs_data](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_volume) | resource |
 | [aws_instance.response](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
 | [aws_kms_key.mystudies_kms_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
 | [aws_lb_listener_certificate.alt_cert](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_certificate) | resource |
+| [aws_route53_record.response_alias_route](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_ssm_parameter.registration_database_password](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.registration_mek](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.registration_rds_master_pass](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
@@ -253,6 +257,7 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="input_response_ebs_size"></a> [response\_ebs\_size](#input\_response\_ebs\_size) | Response EBS data volume size | `string` | `null` | no |
 | <a name="input_response_env_data"></a> [response\_env\_data](#input\_response\_env\_data) | Response Instance Environment data content - used to pass in installation env settings | `map(string)` | `{}` | no |
 | <a name="input_response_snapshot_identifier"></a> [response\_snapshot\_identifier](#input\_response\_snapshot\_identifier) | Snapshot Id to create this database from | `string` | `null` | no |
+| <a name="input_response_target_group_path"></a> [response\_target\_group\_path](#input\_response\_target\_group\_path) | Path used for healthcheck | `string` | `"/"` | no |
 | <a name="input_response_use_rds"></a> [response\_use\_rds](#input\_response\_use\_rds) | Bool to determine use of RDS for Response Server Database | `bool` | `false` | no |
 | <a name="input_s3_state_bucket"></a> [s3\_state\_bucket](#input\_s3\_state\_bucket) | S3 bucket used to store terraform state | `string` | `""` | no |
 | <a name="input_s3_state_region"></a> [s3\_state\_region](#input\_s3\_state\_region) | region of the S3 state bucket | `string` | `"us-west-2"` | no |
@@ -295,10 +300,12 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="output_response_db_id"></a> [response\_db\_id](#output\_response\_db\_id) | n/a |
 | <a name="output_response_db_password"></a> [response\_db\_password](#output\_response\_db\_password) | n/a |
 | <a name="output_response_db_sg_id"></a> [response\_db\_sg\_id](#output\_response\_db\_sg\_id) | n/a |
+| <a name="output_response_fqdn"></a> [response\_fqdn](#output\_response\_fqdn) | Response server fully qualified domain name |
 | <a name="output_response_instance_id"></a> [response\_instance\_id](#output\_response\_instance\_id) | Public IP of the bastion instance (or EIP) |
 | <a name="output_response_mek"></a> [response\_mek](#output\_response\_mek) | n/a |
 | <a name="output_response_private_ip"></a> [response\_private\_ip](#output\_response\_private\_ip) | Public IP of the bastion instance (or EIP) |
 | <a name="output_response_rds_master_pass"></a> [response\_rds\_master\_pass](#output\_response\_rds\_master\_pass) | n/a |
+| <a name="output_response_url"></a> [response\_url](#output\_response\_url) | Response Server URL |
 | <a name="output_validation_domains"></a> [validation\_domains](#output\_validation\_domains) | List of distinct domain validation options. This is useful if subject alternative names contain wildcards. |
 | <a name="output_validation_route53_record_fqdns"></a> [validation\_route53\_record\_fqdns](#output\_validation\_route53\_record\_fqdns) | List of FQDNs built using the zone domain and name. |
 | <a name="output_vpc_alb_arn"></a> [vpc\_alb\_arn](#output\_vpc\_alb\_arn) | ARN of the deployed Application Load Balancer |
