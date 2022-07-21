@@ -40,7 +40,8 @@ output "vpc_alb_arn" {
 }
 
 output "base_domain" {
-  value = var.base_domain
+  value       = var.base_domain
+  description = "Base internet domain used for deployment. e.g. company.com"
 }
 
 output "acm_certificate_arn" {
@@ -85,7 +86,7 @@ output "bastion_security_group_ids" {
 
 output "bastion_role" {
   value       = module.mystudies.bastion_role
-  description = "Name of AWS IAM Role associated with the instance"
+  description = "Name of AWS IAM Role associated with the bastion instance"
 }
 
 output "bastion_public_ip" {
@@ -140,19 +141,18 @@ output "response_fqdn" {
 
 output "response_url" {
   value       = module.mystudies.response_url
-  description = "Response server URL"
+  description = "Response Server URL"
 }
 
 output "response_private_ip" {
   value       = module.mystudies.response_private_ip
-  description = "Public IP of the bastion instance (or EIP)"
+  description = "Private IP of the Response instance"
 }
 
 output "response_instance_id" {
   value       = module.mystudies.response_instance_id
-  description = "Public IP of the bastion instance (or EIP)"
+  description = "Instance ID of the Response instance"
 }
-
 
 output "response_rds_master_pass" {
   value     = module.mystudies.response_rds_master_pass
@@ -186,26 +186,32 @@ output "registration_mek" {
 
 output "response_db_id" {
   value = module.mystudies.response_db_id
+  description = "ID of Response RDS database instance"
 }
 
 output "response_db_az" {
   value = module.mystudies.response_db_az
+  description = "Availability zone of Response RDS database instance"
 }
 
 output "response_db_sg_id" {
   value = module.mystudies.response_db_sg_id
+  description = "Security group ID of Response RDS database instance"
 }
 
 output "registration_db_id" {
   value = module.mystudies.registration_db_id
+  description = "ID of Registration RDS database instance"
 }
 
 output "registration_db_az" {
   value = module.mystudies.registration_db_az
+  description = "Availability zone of Registration RDS database instance"
 }
 
 output "registration_db_sg_id" {
   value = module.mystudies.registration_db_sg_id
+  description = "Security group ID of Registration RDS database instance"
 }
 
 output "wcp_rds_master_pass" {
@@ -215,12 +221,15 @@ output "wcp_rds_master_pass" {
 
 output "wcp_db_id" {
   value = module.mystudies.wcp_db_id
+  description = "ID of WCP RDS database instance"
 }
 
 output "wcp_db_az" {
   value = module.mystudies.wcp_db_az
+  description = "Availability zone of WCP RDS database instance"
 }
 
 output "wcp_db_sg_id" {
   value = module.mystudies.wcp_db_sg_id
+  description = "Security group ID of WCP RDS database instance"
 }

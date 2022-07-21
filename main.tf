@@ -843,7 +843,8 @@ resource "aws_instance" "response" {
       tags,
       disable_api_termination,
       iam_instance_profile,
-    ebs_optimized, ]
+      ebs_optimized
+    ]
   }
 
   metadata_options {

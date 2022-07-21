@@ -214,24 +214,24 @@ variable "ebs_vol_type" {
 variable "response_ebs_size" {
   type        = string
   default     = null
-  description = "Response EBS data volume size"
+  description = "Response Server EBS data volume size"
 }
 
 variable "response_ebs_data_snapshot_identifier" {
   type        = string
   default     = null
-  description = "Snapshot Id to create the response ebs data volume from"
+  description = "Snapshot Id to create the Response Server ebs data volume from"
 }
 
 variable "response_env_data" {
   type        = map(string)
   default     = {}
-  description = "Response Instance Environment data content - used to pass in installation env settings"
+  description = "Response Server Environment data content - used to pass in installation env settings"
 }
 
 variable "response_target_group_path" {
   type        = string
-  description = "Path used for healthcheck"
+  description = "Path used for healthcheck on Response Server"
   default     = "/"
 }
 
@@ -250,7 +250,7 @@ variable "response_use_rds" {
 variable "response_snapshot_identifier" {
   type        = string
   default     = null
-  description = "Snapshot Id to create this database from"
+  description = "Snapshot Id to create Response database from"
 }
 
 variable "registration_use_rds" {
@@ -262,7 +262,7 @@ variable "registration_use_rds" {
 variable "registration_snapshot_identifier" {
   type        = string
   default     = null
-  description = "Snapshot Id to create this database from"
+  description = "Snapshot Id to create Registration database from"
 }
 
 variable "wcp_use_rds" {
@@ -274,7 +274,7 @@ variable "wcp_use_rds" {
 variable "wcp_snapshot_identifier" {
   type        = string
   default     = null
-  description = "Snapshot Id to create this database from"
+  description = "Snapshot Id to create WCP database from"
 }
 
 

@@ -41,6 +41,7 @@ output "vpc_alb_arn" {
 
 output "base_domain" {
   value = var.base_domain
+  description = "Base internet domain used for deployment. e.g. company.com"
 }
 
 output "acm_certificate_arn" {
@@ -85,7 +86,7 @@ output "bastion_security_group_ids" {
 
 output "bastion_role" {
   value       = module.ec2_bastion.role
-  description = "Name of AWS IAM Role associated with the instance"
+  description = "Name of AWS IAM Role associated with the bastion instance"
 }
 
 output "bastion_public_ip" {
@@ -133,6 +134,26 @@ output "response_db_password" {
   sensitive = true
 }
 
+output "response_fqdn" {
+  value       = element(concat(aws_route53_record.response_alias_route.*.fqdn, [""]), 0)
+  description = "Response server fully qualified domain name"
+}
+
+output "response_url" {
+  value       = "https://${element(concat(aws_route53_record.response_alias_route.*.fqdn, [""]), 0)}"
+  description = "Response Server URL"
+}
+
+output "response_private_ip" {
+  value       = aws_instance.response.private_ip
+  description = "Private IP of the Response instance"
+}
+
+output "response_instance_id" {
+  value       = aws_instance.response.id
+  description = "Instance ID of the Response instance"
+}
+
 output "response_rds_master_pass" {
   value     = random_password.response_rds_master_pass.result
   sensitive = true
@@ -165,47 +186,32 @@ output "registration_mek" {
 
 output "response_db_id" {
   value = module.response_db.db_instance_id
+  description = "ID of Response RDS database instance"
 }
 
 output "response_db_az" {
   value = module.response_db.db_instance_availability_zone
+  description = "Availability zone of Response RDS database instance"
 }
 
 output "response_db_sg_id" {
   value = module.response_psql_sg.security_group_id
+  description = "Security group ID of Response RDS database instance"
 }
-
-output "response_private_ip" {
-  value       = aws_instance.response.private_ip
-  description = "Public IP of the bastion instance (or EIP)"
-}
-
-output "response_fqdn" {
-  value       = element(concat(aws_route53_record.response_alias_route.*.fqdn, [""]), 0)
-  description = "Response server fully qualified domain name"
-}
-
-output "response_url" {
-  value       = "https://${element(concat(aws_route53_record.response_alias_route.*.fqdn, [""]), 0)}"
-  description = "Response Server URL"
-}
-
-output "response_instance_id" {
-  value       = aws_instance.response.id
-  description = "Public IP of the bastion instance (or EIP)"
-}
-
 
 output "registration_db_id" {
   value = module.registration_db.db_instance_id
+  description = "ID of Registration RDS database instance"
 }
 
 output "registration_db_az" {
   value = module.registration_db.db_instance_availability_zone
+  description = "Availability zone of Registration RDS database instance"
 }
 
 output "registration_db_sg_id" {
   value = module.registration_psql_sg.security_group_id
+  description = "Security group ID of Registration RDS database instance"
 }
 
 output "wcp_rds_master_pass" {
@@ -215,12 +221,15 @@ output "wcp_rds_master_pass" {
 
 output "wcp_db_id" {
   value = module.wcp_db.db_instance_id
+  description = "ID of WCP RDS database instance"
 }
 
 output "wcp_db_az" {
   value = module.wcp_db.db_instance_availability_zone
+  description = "Availability zone of WCP RDS database instance"
 }
 
 output "wcp_db_sg_id" {
   value = module.wcp_mysql_sg.security_group_id
+  description = "Security group ID of WCP RDS database instance"
 }
