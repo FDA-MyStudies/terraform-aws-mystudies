@@ -185,32 +185,32 @@ output "registration_mek" {
 }
 
 output "response_db_id" {
-  value = module.mystudies.response_db_id
+  value       = module.mystudies.response_db_id
   description = "ID of Response RDS database instance"
 }
 
 output "response_db_az" {
-  value = module.mystudies.response_db_az
+  value       = module.mystudies.response_db_az
   description = "Availability zone of Response RDS database instance"
 }
 
 output "response_db_sg_id" {
-  value = module.mystudies.response_db_sg_id
+  value       = module.mystudies.response_db_sg_id
   description = "Security group ID of Response RDS database instance"
 }
 
 output "registration_db_id" {
-  value = module.mystudies.registration_db_id
+  value       = module.mystudies.registration_db_id
   description = "ID of Registration RDS database instance"
 }
 
 output "registration_db_az" {
-  value = module.mystudies.registration_db_az
+  value       = module.mystudies.registration_db_az
   description = "Availability zone of Registration RDS database instance"
 }
 
 output "registration_db_sg_id" {
-  value = module.mystudies.registration_db_sg_id
+  value       = module.mystudies.registration_db_sg_id
   description = "Security group ID of Registration RDS database instance"
 }
 
@@ -220,16 +220,16 @@ output "wcp_rds_master_pass" {
 }
 
 output "wcp_db_id" {
-  value = module.mystudies.wcp_db_id
+  value       = module.mystudies.wcp_db_id
   description = "ID of WCP RDS database instance"
 }
 
 output "wcp_db_az" {
-  value = module.mystudies.wcp_db_az
+  value       = module.mystudies.wcp_db_az
   description = "Availability zone of WCP RDS database instance"
 }
 
 output "wcp_db_sg_id" {
-  value = module.mystudies.wcp_db_sg_id
+  value       = module.mystudies.wcp_db_sg_id
   description = "Security group ID of WCP RDS database instance"
 }
