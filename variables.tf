@@ -33,10 +33,17 @@ variable "security_group_ids" {
 #   description = "id of the vpc within which to create the infrastructure"
 # }
 
-variable "keypair_name" {
+variable "bastion_private_key" {
   type        = string
-  description = "name of existing keypair to use when creating EC2"
+  description = "Name of private key used to ssh to bastion server"
 }
+
+variable "appserver_private_key" {
+  type        = string
+  default     = ""
+  description = "Name of private key used to ssh to appserver"
+}
+
 
 variable "private_subnets" {
   type        = list(string)
@@ -79,7 +86,7 @@ variable "subnet_id" {
 
 variable "private_key_path" {
   type        = string
-  description = "path to the ssh private key used for provisioning instances"
+  description = "Local path to private keys used for provisioning instances"
 }
 
 variable "install_script_repo_url" {
@@ -149,6 +156,7 @@ variable "bastion_user_data" {
 }
 
 
+
 variable "user" {
   type        = string
   default     = ""
@@ -197,6 +205,35 @@ variable "alb_ssl_policy" {
   # http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-security-policy-table.html
   default = "ELBSecurityPolicy-TLS-1-2-2017-01"
 }
+variable "ebs_vol_type" {
+  type        = string
+  default     = "gp3"
+  description = "EBS data volume type - Standard, gp2, gp3, io1, io2, sc1 or sct1"
+}
+
+variable "response_ebs_size" {
+  type        = string
+  default     = null
+  description = "Response Server EBS data volume size"
+}
+
+variable "response_ebs_data_snapshot_identifier" {
+  type        = string
+  default     = null
+  description = "Snapshot Id to create the Response Server ebs data volume from"
+}
+
+variable "response_env_data" {
+  type        = map(string)
+  default     = {}
+  description = "Response Server Environment data content - used to pass in installation env settings"
+}
+
+variable "response_target_group_path" {
+  type        = string
+  description = "Path used for healthcheck on Response Server"
+  default     = "/"
+}
 
 variable "use_common_rds_subnet_group" {
   type        = bool
@@ -213,7 +250,7 @@ variable "response_use_rds" {
 variable "response_snapshot_identifier" {
   type        = string
   default     = null
-  description = "Snapshot Id to create this database from"
+  description = "Snapshot Id to create Response database from"
 }
 
 variable "registration_use_rds" {
@@ -225,7 +262,7 @@ variable "registration_use_rds" {
 variable "registration_snapshot_identifier" {
   type        = string
   default     = null
-  description = "Snapshot Id to create this database from"
+  description = "Snapshot Id to create Registration database from"
 }
 
 variable "wcp_use_rds" {
@@ -237,7 +274,7 @@ variable "wcp_use_rds" {
 variable "wcp_snapshot_identifier" {
   type        = string
   default     = null
-  description = "Snapshot Id to create this database from"
+  description = "Snapshot Id to create WCP database from"
 }
 
 
