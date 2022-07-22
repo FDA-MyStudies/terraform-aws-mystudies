@@ -501,7 +501,7 @@ resource "random_password" "response_database_password" {
   min_upper        = 3
   min_numeric      = 3
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!#*-_=+[].,:?"
 }
 
 resource "aws_ssm_parameter" "response_database_password" {
@@ -518,7 +518,7 @@ resource "random_password" "response_rds_master_pass" {
   min_upper        = 3
   min_numeric      = 3
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!#*-_=+[].,:?"
 }
 
 resource "aws_ssm_parameter" "response_rds_master_pass" {
@@ -554,7 +554,7 @@ resource "random_password" "registration_rds_master_pass" {
   min_upper        = 3
   min_numeric      = 3
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!#*-_=+[].,:?"
 }
 
 resource "aws_ssm_parameter" "registration_rds_master_pass" {
@@ -571,7 +571,7 @@ resource "random_password" "registration_database_password" {
   min_upper        = 3
   min_numeric      = 3
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!#*-_=+[].,:?"
 }
 
 resource "aws_ssm_parameter" "registration_database_password" {
@@ -607,7 +607,7 @@ resource "random_password" "wcp_database_password" {
   min_upper        = 3
   min_numeric      = 3
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!#*-_=+[].,:?"
 }
 
 resource "aws_ssm_parameter" "wcp_database_password" {
@@ -624,7 +624,7 @@ resource "random_password" "wcp_rds_master_pass" {
   min_upper        = 3
   min_numeric      = 3
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!#*-_=+[].,:?"
 }
 
 resource "aws_ssm_parameter" "wcp_rds_master_pass" {
@@ -974,6 +974,7 @@ resource "null_resource" "registration_post_deploy_provisioner" {
             LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
             LABKEY_SYSTEM_DESCRIPTION                        = "MyStudies Registration Server"
             LABKEY_VERSION                                   = "22.3.4"
+            POSTGRES_PASSWORD                                = nonsensitive(aws_ssm_parameter.registration_database_password.value)
             POSTGRES_SVR_LOCAL                               = "TRUE"
             TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
             TOMCAT_INSTALL_TYPE                              = "Standard"
@@ -1107,6 +1108,7 @@ resource "aws_instance" "response" {
     bastion_private_key = local.bastion_key
   }
 
+/*
   provisioner "remote-exec" {
     inline = [
       templatefile(
@@ -1140,6 +1142,8 @@ resource "aws_instance" "response" {
       )
     ]
   }
+  */
+
 }
 
 resource "aws_ebs_volume" "response_ebs_data" {
@@ -1168,7 +1172,61 @@ resource "aws_volume_attachment" "response_ebs_vol_attachment" {
 }
 
 #
-# TODO consider adding NULL Resource to call a script to format and mount EBS Volume
+
+resource "null_resource" "response_post_deploy_provisioner" {
+  triggers = {
+    appserver = aws_instance.response.id
+  }
+
+  connection {
+    type = "ssh"
+    user = "ubuntu"
+    # local file path to private key
+    private_key = local.server_key
+
+    host = aws_instance.response.private_ip
+
+    bastion_host        = module.ec2_bastion.public_dns
+    bastion_user        = module.ec2_bastion.ssh_user
+    bastion_private_key = local.bastion_key
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      templatefile(
+        "${path.module}/install-script-warpper.tmpl",
+        {
+          script_name = "labkey"
+          debug       = var.debug
+          environment = {
+            LABKEY_APP_HOME                                  = "/labkey"
+            LABKEY_BASE_SERVER_URL                           = "https://${local.response_fqdn}"
+            LABKEY_COMPANY_NAME                              = local.labkey_company_name
+            LABKEY_DISTRIBUTION                              = "community"
+            LABKEY_DIST_FILENAME                             = "LabKey22.3.4-6-community.tar.gz"
+            LABKEY_DIST_URL                                  = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
+            LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
+            LABKEY_HTTPS_PORT                                = "443"
+            LABKEY_HTTP_PORT                                 = "80"
+            LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
+            LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
+            LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
+            LABKEY_SYSTEM_DESCRIPTION                        = "MyStudies Response Server"
+            LABKEY_VERSION                                   = "22.3.4"
+            POSTGRES_PASSWORD                                = nonsensitive(aws_ssm_parameter.response_database_password.value)
+            POSTGRES_SVR_LOCAL                               = "TRUE"
+            TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
+            TOMCAT_INSTALL_TYPE                              = "Standard"
+            TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
+          }
+          url    = var.install_script_repo_url
+          branch = var.install_script_repo_branch
+        }
+      )
+    ]
+  }
+
+}
 
 
 resource "aws_alb_target_group" "mystudies_response_target_https" {
