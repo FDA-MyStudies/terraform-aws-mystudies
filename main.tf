@@ -827,7 +827,6 @@ resource "aws_instance" "registration" {
 
   subnet_id = module.vpc.private_subnets[0]
 
-  # security_groups = flatten([module.alb_https_sg.this_security_group_id, module.alb_http_sg.this_security_group_id, var.security_group_ids])
   vpc_security_group_ids = compact([module.appserver_ssh_sg.security_group_id, module.https_private_sg.security_group_id])
 
   tags = merge(
@@ -872,41 +871,6 @@ resource "aws_instance" "registration" {
     bastion_user        = module.ec2_bastion.ssh_user
     bastion_private_key = local.bastion_key
   }
-  /*
-  provisioner "remote-exec" {
-    inline = [
-      templatefile(
-        "${path.module}/install-script-warpper.tmpl",
-        {
-          script_name = "labkey"
-          debug       = var.debug
-          environment = {
-            LABKEY_APP_HOME                                  = "/labkey"
-            LABKEY_BASE_SERVER_URL                           = "https://${local.response_fqdn}"
-            LABKEY_COMPANY_NAME                              = local.labkey_company_name
-            LABKEY_DISTRIBUTION                              = "community"
-            LABKEY_DIST_FILENAME                             = "LabKey22.3.4-6-community.tar.gz"
-            LABKEY_DIST_URL                                  = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
-            LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
-            LABKEY_HTTPS_PORT                                = "443"
-            LABKEY_HTTP_PORT                                 = "80"
-            LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
-            LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
-            LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
-            LABKEY_SYSTEM_DESCRIPTION                        = "MyStudies Registration Server"
-            LABKEY_VERSION                                   = "22.3.4"
-            POSTGRES_SVR_LOCAL                               = "TRUE"
-            TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
-            TOMCAT_INSTALL_TYPE                              = "Standard"
-            TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
-          }
-          url    = var.install_script_repo_url
-          branch = var.install_script_repo_branch
-        }
-      )
-    ]
-  }
-  */
 }
 
 resource "aws_ebs_volume" "registration_ebs_data" {
@@ -1062,7 +1026,6 @@ resource "aws_instance" "response" {
 
   subnet_id = module.vpc.private_subnets[0]
 
-  # security_groups = flatten([module.alb_https_sg.this_security_group_id, module.alb_http_sg.this_security_group_id, var.security_group_ids])
   vpc_security_group_ids = compact([module.appserver_ssh_sg.security_group_id, module.https_private_sg.security_group_id])
 
   tags = merge(
@@ -1107,43 +1070,6 @@ resource "aws_instance" "response" {
     bastion_user        = module.ec2_bastion.ssh_user
     bastion_private_key = local.bastion_key
   }
-
-/*
-  provisioner "remote-exec" {
-    inline = [
-      templatefile(
-        "${path.module}/install-script-warpper.tmpl",
-        {
-          script_name = "labkey"
-          debug       = var.debug
-          environment = {
-            LABKEY_APP_HOME                                  = "/labkey"
-            LABKEY_BASE_SERVER_URL                           = "https://${local.response_fqdn}"
-            LABKEY_COMPANY_NAME                              = local.labkey_company_name
-            LABKEY_DISTRIBUTION                              = "community"
-            LABKEY_DIST_FILENAME                             = "LabKey22.3.4-6-community.tar.gz"
-            LABKEY_DIST_URL                                  = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
-            LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
-            LABKEY_HTTPS_PORT                                = "443"
-            LABKEY_HTTP_PORT                                 = "80"
-            LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
-            LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
-            LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
-            LABKEY_SYSTEM_DESCRIPTION                        = "MyStudies Response Server"
-            LABKEY_VERSION                                   = "22.3.4"
-            POSTGRES_SVR_LOCAL                               = "TRUE"
-            TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
-            TOMCAT_INSTALL_TYPE                              = "Standard"
-            TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
-          }
-          url    = var.install_script_repo_url
-          branch = var.install_script_repo_branch
-        }
-      )
-    ]
-  }
-  */
-
 }
 
 resource "aws_ebs_volume" "response_ebs_data" {
@@ -1287,53 +1213,6 @@ resource "aws_route53_record" "response_alias_route" {
 }
 
 
-
-
-# resource "aws_instance" "registration" {
-
-#   ami           = data.aws_ami.ubuntu.id
-#   instance_type = local.instance_type
-
-#   tags = merge(
-#     var.additional_tags,
-#     {
-#       Name = "${local.name_prefix}-${each.key}"
-#     },
-#   )
-
-#   lifecycle {
-#     ignore_changes = [tags]
-#   }
-
-#   provisioner "remote-exec" {
-#     inline = <<EOT
-#       ./install-labkey.bash
-#     EOT
-#   }
-# }
-
-# resource "aws_instance" "wcp" {
-
-#   ami           = data.aws_ami.ubuntu.id
-#   instance_type = local.instance_type
-
-#   tags = merge(
-#     var.additional_tags,
-#     {
-#       Name = "${local.name_prefix}-${each.key}"
-#     },
-#   )
-
-#   lifecycle {
-#     ignore_changes = [tags]
-#   }
-
-#   provisioner "remote-exec" {
-#     inline = <<EOT
-#       ./install-wcp.bash
-#     EOT
-#   }
-# }
 
 # TODO consider creating NULL Resource to create a ssh_config file
 
