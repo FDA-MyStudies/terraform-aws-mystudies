@@ -962,7 +962,6 @@ resource "aws_alb_target_group" "mystudies_registration_target_https" {
   health_check {
     protocol = "HTTPS"
 
-    //TODO make variable
     healthy_threshold   = 2
     interval            = 15
     path                = var.registration_target_group_path
@@ -1015,7 +1014,7 @@ resource "aws_route53_record" "registration_alias_route" {
 ########################
 # Response Instance
 ########################
-# TODO plumb DB password to use secrets created in Secrets Management
+
 
 resource "aws_instance" "response" {
 
@@ -1164,7 +1163,6 @@ resource "aws_alb_target_group" "mystudies_response_target_https" {
   health_check {
     protocol = "HTTPS"
 
-    //TODO make variable
     healthy_threshold   = 2
     interval            = 15
     path                = var.response_target_group_path
