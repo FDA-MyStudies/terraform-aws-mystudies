@@ -152,7 +152,10 @@ No resources.
 | <a name="input_private_subnets"></a> [private\_subnets](#input\_private\_subnets) | list of private subnets to use when creating vpc | `list(string)` | n/a | yes |
 | <a name="input_public_subnets"></a> [public\_subnets](#input\_public\_subnets) | list of public subnets to use when creating vpc | `list(string)` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | n/a | `string` | `"us-west-2"` | no |
+| <a name="input_registration_ebs_data_snapshot_identifier"></a> [registration\_ebs\_data\_snapshot\_identifier](#input\_registration\_ebs\_data\_snapshot\_identifier) | Snapshot Id to create the Registration Server ebs data volume from | `string` | `null` | no |
+| <a name="input_registration_ebs_size"></a> [registration\_ebs\_size](#input\_registration\_ebs\_size) | Registration Server EBS data volume size | `string` | `null` | no |
 | <a name="input_registration_snapshot_identifier"></a> [registration\_snapshot\_identifier](#input\_registration\_snapshot\_identifier) | Snapshot Id to create Registration database from | `string` | `null` | no |
+| <a name="input_registration_target_group_path"></a> [registration\_target\_group\_path](#input\_registration\_target\_group\_path) | Path used for healthcheck on Registration Server | `string` | `"/"` | no |
 | <a name="input_registration_use_rds"></a> [registration\_use\_rds](#input\_registration\_use\_rds) | Bool to determine use of RDS for Registration Server Database | `bool` | `false` | no |
 | <a name="input_response_ebs_data_snapshot_identifier"></a> [response\_ebs\_data\_snapshot\_identifier](#input\_response\_ebs\_data\_snapshot\_identifier) | Snapshot Id to create the Response Server ebs data volume from | `string` | `null` | no |
 | <a name="input_response_ebs_size"></a> [response\_ebs\_size](#input\_response\_ebs\_size) | Response Server EBS data volume size | `string` | `null` | no |
@@ -195,8 +198,12 @@ No resources.
 | <a name="output_registration_db_id"></a> [registration\_db\_id](#output\_registration\_db\_id) | ID of Registration RDS database instance |
 | <a name="output_registration_db_password"></a> [registration\_db\_password](#output\_registration\_db\_password) | n/a |
 | <a name="output_registration_db_sg_id"></a> [registration\_db\_sg\_id](#output\_registration\_db\_sg\_id) | Security group ID of Registration RDS database instance |
+| <a name="output_registration_fqdn"></a> [registration\_fqdn](#output\_registration\_fqdn) | Registration server fully qualified domain name |
+| <a name="output_registration_instance_id"></a> [registration\_instance\_id](#output\_registration\_instance\_id) | Instance ID of the Registration instance |
 | <a name="output_registration_mek"></a> [registration\_mek](#output\_registration\_mek) | n/a |
+| <a name="output_registration_private_ip"></a> [registration\_private\_ip](#output\_registration\_private\_ip) | Private IP of the Registration instance |
 | <a name="output_registration_rds_master_pass"></a> [registration\_rds\_master\_pass](#output\_registration\_rds\_master\_pass) | n/a |
+| <a name="output_registration_url"></a> [registration\_url](#output\_registration\_url) | Registration Server URL |
 | <a name="output_response_db_az"></a> [response\_db\_az](#output\_response\_db\_az) | Availability zone of Response RDS database instance |
 | <a name="output_response_db_id"></a> [response\_db\_id](#output\_response\_db\_id) | ID of Response RDS database instance |
 | <a name="output_response_db_password"></a> [response\_db\_password](#output\_response\_db\_password) | n/a |
