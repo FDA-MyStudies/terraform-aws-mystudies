@@ -872,7 +872,7 @@ resource "aws_instance" "registration" {
     bastion_user        = module.ec2_bastion.ssh_user
     bastion_private_key = local.bastion_key
   }
-/*
+  /*
   provisioner "remote-exec" {
     inline = [
       templatefile(
@@ -988,6 +988,62 @@ resource "null_resource" "registration_post_deploy_provisioner" {
 
 }
 
+resource "aws_alb_target_group" "mystudies_registration_target_https" {
+  name     = "${var.formation_type}-vpc-${var.formation}-reg-https"
+  port     = 443
+  protocol = "HTTPS"
+  vpc_id   = module.vpc.vpc_id
+
+  health_check {
+    protocol = "HTTPS"
+
+    //TODO make variable
+    healthy_threshold   = 2
+    interval            = 15
+    path                = var.registration_target_group_path
+    matcher             = "200,302"
+    timeout             = 5
+    unhealthy_threshold = 5
+  }
+
+  tags = local.additional_tags
+}
+
+resource "aws_alb_target_group_attachment" "registration_attachment_https" {
+  target_group_arn = aws_alb_target_group.mystudies_registration_target_https.arn
+  target_id        = aws_instance.registration.id
+  port             = 443
+}
+
+resource "aws_alb_listener_rule" "reg_listener_rule_https" {
+  listener_arn = aws_alb_listener.alb_https_listener.arn
+  depends_on   = [aws_alb_target_group.mystudies_registration_target_https]
+  #priority     = var.rule_priority //Required but there is no way to query for next priority
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_alb_target_group.mystudies_registration_target_https.arn
+  }
+
+  condition {
+    host_header {
+      values = [local.registration_fqdn]
+    }
+  }
+}
+
+resource "aws_route53_record" "registration_alias_route" {
+
+  zone_id = data.aws_route53_zone.env_zone.zone_id
+  name    = local.registration_dns_shortname
+  type    = "A"
+
+  alias {
+    name                   = module.alb.lb_dns_name
+    zone_id                = module.alb.lb_zone_id
+    evaluate_target_health = false
+  }
+}
 
 
 

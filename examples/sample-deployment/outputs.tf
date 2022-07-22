@@ -164,6 +164,26 @@ output "registration_db_password" {
   sensitive = true
 }
 
+output "registration_fqdn" {
+  value       = module.mystudies.registration_fqdn
+  description = "Registration server fully qualified domain name"
+}
+
+output "registration_url" {
+  value       = module.mystudies.registration_url
+  description = "Registration Server URL"
+}
+
+output "registration_private_ip" {
+  value       = module.mystudies.registration_private_ip
+  description = "Private IP of the Registration instance"
+}
+
+output "registration_instance_id" {
+  value       = module.mystudies.registration_instance_id
+  description = "Instance ID of the Registration instance"
+}
+
 output "registration_rds_master_pass" {
   value     = module.mystudies.registration_rds_master_pass
   sensitive = true
