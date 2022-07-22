@@ -52,6 +52,7 @@ BLK_ID=""
 if [[ "$ATTACHED_EBS" =~ .*"nvme1n1".* ]]; then
   # ebs vol is attached check to see if formatted
   echo "--- EBS Volume is attached... ---"
+  BLK_ID=$(sudo blkid)
 
   if [[ ! $BLK_ID =~ .*"nvme1n1".* ]]; then
     # no file system on ebs - format ebs vol
@@ -62,8 +63,10 @@ if [[ "$ATTACHED_EBS" =~ .*"nvme1n1".* ]]; then
     sudo mount /dev/nvme1n1 /media/ebs_volume
     # create ebs_vol cookie so we know its mounted
     date | sudo tee /media/ebs_volume/.ebs_volume
+
     if [[ -n "$BLK_ID" ]]; then
       # create fstab entry
+      BLK_ID=$(sudo blkid /dev/nvme1n1 | cut -f2 -d" ")
       echo "--- Creating fstab entry... ---"
       echo "$BLK_ID     /media/ebs_volume   xfs    defaults   0   2" | sudo tee --append "/etc/fstab"
       # update mounts from fstab
@@ -76,6 +79,7 @@ if [[ "$ATTACHED_EBS" =~ .*"nvme1n1".* ]]; then
   else
     # ebs volume is formatted - ensure its added to fstab
     echo "--- EBS volume attached - already has a filesystem... ---"
+    BLK_ID=$(sudo blkid /dev/nvme1n1 | cut -f2 -d" ")
     if ! grep -qs "$BLK_ID" "/etc/fstab"; then
       # create fstab entry
       echo "--- Creating fstab entry... ---"
