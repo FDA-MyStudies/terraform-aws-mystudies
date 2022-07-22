@@ -253,6 +253,18 @@ variable "response_snapshot_identifier" {
   description = "Snapshot Id to create Response database from"
 }
 
+variable "registration_ebs_size" {
+  type        = string
+  default     = null
+  description = "Registration Server EBS data volume size"
+}
+
+variable "registration_ebs_data_snapshot_identifier" {
+  type        = string
+  default     = null
+  description = "Snapshot Id to create the Registration Server ebs data volume from"
+}
+
 variable "registration_use_rds" {
   type        = bool
   default     = false
@@ -263,6 +275,12 @@ variable "registration_snapshot_identifier" {
   type        = string
   default     = null
   description = "Snapshot Id to create Registration database from"
+}
+
+variable "registration_target_group_path" {
+  type        = string
+  description = "Path used for healthcheck on Registration Server"
+  default     = "/"
 }
 
 variable "wcp_use_rds" {
