@@ -72,6 +72,9 @@ response_env_data = {
 # Deploy Response RDS DB Instance
 response_use_rds = false
 
+# Set to null to disable registration server ebs data volume - otherwise enter a value in GB
+registration_ebs_size = "16"
+
 # Deploy Registration RDS DB Instance
 registration_use_rds = false
 

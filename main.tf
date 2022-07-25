@@ -48,6 +48,9 @@ locals {
   server_key         = file("${var.private_key_path}/${var.appserver_private_key}.pem")
   bastion_key        = file("${var.private_key_path}/${var.bastion_private_key}.pem")
 
+  registration_dns_shortname = "registration-${local.name_prefix}"
+  registration_fqdn          = "${local.registration_dns_shortname}.${var.base_domain}"
+
   response_dns_shortname = "response-${local.name_prefix}"
   response_fqdn          = "${local.response_dns_shortname}.${var.base_domain}"
 
@@ -498,7 +501,7 @@ resource "random_password" "response_database_password" {
   min_upper        = 3
   min_numeric      = 3
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!#*-_=+[].,:?"
 }
 
 resource "aws_ssm_parameter" "response_database_password" {
@@ -515,7 +518,7 @@ resource "random_password" "response_rds_master_pass" {
   min_upper        = 3
   min_numeric      = 3
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!#*-_=+[].,:?"
 }
 
 resource "aws_ssm_parameter" "response_rds_master_pass" {
@@ -551,7 +554,7 @@ resource "random_password" "registration_rds_master_pass" {
   min_upper        = 3
   min_numeric      = 3
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!#*-_=+[].,:?"
 }
 
 resource "aws_ssm_parameter" "registration_rds_master_pass" {
@@ -568,7 +571,7 @@ resource "random_password" "registration_database_password" {
   min_upper        = 3
   min_numeric      = 3
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!#*-_=+[].,:?"
 }
 
 resource "aws_ssm_parameter" "registration_database_password" {
@@ -604,7 +607,7 @@ resource "random_password" "wcp_database_password" {
   min_upper        = 3
   min_numeric      = 3
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!#*-_=+[].,:?"
 }
 
 resource "aws_ssm_parameter" "wcp_database_password" {
@@ -621,7 +624,7 @@ resource "random_password" "wcp_rds_master_pass" {
   min_upper        = 3
   min_numeric      = 3
   special          = true
-  override_special = "!#$%&*()-_=+[]{}<>:?"
+  override_special = "!#*-_=+[].,:?"
 }
 
 resource "aws_ssm_parameter" "wcp_rds_master_pass" {
@@ -811,6 +814,207 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"]
 }
 
+########################
+# Registration Instance
+########################
+
+resource "aws_instance" "registration" {
+
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = local.instance_type
+  # key_name used in ec2 console
+  key_name = var.appserver_private_key
+
+  subnet_id = module.vpc.private_subnets[0]
+
+  vpc_security_group_ids = compact([module.appserver_ssh_sg.security_group_id, module.https_private_sg.security_group_id])
+
+  tags = merge(
+    local.additional_tags,
+    {
+      Name = "${local.name_prefix}-registration"
+    },
+  )
+
+  volume_tags = merge(
+    local.additional_tags,
+    {
+      "Name" = "${local.name_prefix}-registration-volume"
+    },
+  )
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+      disable_api_termination,
+      iam_instance_profile,
+      ebs_optimized
+    ]
+  }
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+    instance_metadata_tags      = "enabled"
+  }
+
+  connection {
+    type = "ssh"
+    user = "ubuntu"
+    # local file path to private key
+    private_key = local.server_key
+
+    host = coalesce(self.public_ip, self.private_ip)
+
+    bastion_host        = module.ec2_bastion.public_dns
+    bastion_user        = module.ec2_bastion.ssh_user
+    bastion_private_key = local.bastion_key
+  }
+}
+
+resource "aws_ebs_volume" "registration_ebs_data" {
+  # deploy only if registration_ebs_size has a value of > Null
+  count = var.registration_ebs_size != "" ? 1 : 0
+
+  availability_zone = data.aws_availability_zones.available.names[0]
+  size              = var.registration_ebs_size
+  encrypted         = true
+  snapshot_id       = var.registration_ebs_data_snapshot_identifier
+  type              = var.ebs_vol_type
+  tags = merge(
+    local.additional_tags,
+    {
+      "Name" = "${local.name_prefix}-registration-data-volume"
+    },
+  )
+}
+
+resource "aws_volume_attachment" "registration_ebs_vol_attachment" {
+  count = var.registration_ebs_size != "" ? 1 : 0
+
+  device_name = "/dev/sdf"
+  volume_id   = aws_ebs_volume.registration_ebs_data[0].id
+  instance_id = aws_instance.registration.id
+}
+
+resource "null_resource" "registration_post_deploy_provisioner" {
+  triggers = {
+    appserver = aws_instance.registration.id
+  }
+
+  connection {
+    type = "ssh"
+    user = "ubuntu"
+    # local file path to private key
+    private_key = local.server_key
+
+    host = aws_instance.registration.private_ip
+
+    bastion_host        = module.ec2_bastion.public_dns
+    bastion_user        = module.ec2_bastion.ssh_user
+    bastion_private_key = local.bastion_key
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      templatefile(
+        "${path.module}/install-script-warpper.tmpl",
+        {
+          script_name = "labkey"
+          debug       = var.debug
+          environment = {
+            LABKEY_APP_HOME                                  = "/labkey"
+            LABKEY_BASE_SERVER_URL                           = "https://${local.registration_fqdn}"
+            LABKEY_COMPANY_NAME                              = local.labkey_company_name
+            LABKEY_DISTRIBUTION                              = "community"
+            LABKEY_DIST_FILENAME                             = "LabKey22.3.4-6-community.tar.gz"
+            LABKEY_DIST_URL                                  = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
+            LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
+            LABKEY_HTTPS_PORT                                = "443"
+            LABKEY_HTTP_PORT                                 = "80"
+            LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
+            LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
+            LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
+            LABKEY_SYSTEM_DESCRIPTION                        = "MyStudies Registration Server"
+            LABKEY_VERSION                                   = "22.3.4"
+            POSTGRES_PASSWORD                                = nonsensitive(aws_ssm_parameter.registration_database_password.value)
+            POSTGRES_SVR_LOCAL                               = "TRUE"
+            TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
+            TOMCAT_INSTALL_TYPE                              = "Standard"
+            TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
+          }
+          url    = var.install_script_repo_url
+          branch = var.install_script_repo_branch
+        }
+      )
+    ]
+  }
+
+}
+
+resource "aws_alb_target_group" "mystudies_registration_target_https" {
+  name     = "${var.formation_type}-vpc-${var.formation}-reg-https"
+  port     = 443
+  protocol = "HTTPS"
+  vpc_id   = module.vpc.vpc_id
+
+  health_check {
+    protocol = "HTTPS"
+
+    healthy_threshold   = 2
+    interval            = 15
+    path                = var.registration_target_group_path
+    matcher             = "200,302"
+    timeout             = 5
+    unhealthy_threshold = 5
+  }
+
+  tags = local.additional_tags
+}
+
+resource "aws_alb_target_group_attachment" "registration_attachment_https" {
+  target_group_arn = aws_alb_target_group.mystudies_registration_target_https.arn
+  target_id        = aws_instance.registration.id
+  port             = 443
+}
+
+resource "aws_alb_listener_rule" "reg_listener_rule_https" {
+  listener_arn = aws_alb_listener.alb_https_listener.arn
+  depends_on   = [aws_alb_target_group.mystudies_registration_target_https]
+  #priority     = var.rule_priority //Required but there is no way to query for next priority
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_alb_target_group.mystudies_registration_target_https.arn
+  }
+
+  condition {
+    host_header {
+      values = [local.registration_fqdn]
+    }
+  }
+}
+
+resource "aws_route53_record" "registration_alias_route" {
+
+  zone_id = data.aws_route53_zone.env_zone.zone_id
+  name    = local.registration_dns_shortname
+  type    = "A"
+
+  alias {
+    name                   = module.alb.lb_dns_name
+    zone_id                = module.alb.lb_zone_id
+    evaluate_target_health = false
+  }
+}
+
+
+
+########################
+# Response Instance
+########################
+
 
 resource "aws_instance" "response" {
 
@@ -821,7 +1025,6 @@ resource "aws_instance" "response" {
 
   subnet_id = module.vpc.private_subnets[0]
 
-  # security_groups = flatten([module.alb_https_sg.this_security_group_id, module.alb_http_sg.this_security_group_id, var.security_group_ids])
   vpc_security_group_ids = compact([module.appserver_ssh_sg.security_group_id, module.https_private_sg.security_group_id])
 
   tags = merge(
@@ -866,40 +1069,6 @@ resource "aws_instance" "response" {
     bastion_user        = module.ec2_bastion.ssh_user
     bastion_private_key = local.bastion_key
   }
-
-  provisioner "remote-exec" {
-    inline = [
-      templatefile(
-        "${path.module}/install-script-warpper.tmpl",
-        {
-          script_name = "labkey"
-          debug       = var.debug
-          environment = {
-            LABKEY_APP_HOME                                  = "/labkey"
-            LABKEY_BASE_SERVER_URL                           = "https://${local.response_fqdn}"
-            LABKEY_COMPANY_NAME                              = local.labkey_company_name
-            LABKEY_DISTRIBUTION                              = "community"
-            LABKEY_DIST_FILENAME                             = "LabKey22.3.4-6-community.tar.gz"
-            LABKEY_DIST_URL                                  = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
-            LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
-            LABKEY_HTTPS_PORT                                = "443"
-            LABKEY_HTTP_PORT                                 = "80"
-            LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
-            LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
-            LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
-            LABKEY_SYSTEM_DESCRIPTION                        = "MyStudies Response Server"
-            LABKEY_VERSION                                   = "22.3.4"
-            POSTGRES_SVR_LOCAL                               = "TRUE"
-            TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
-            TOMCAT_INSTALL_TYPE                              = "Standard"
-            TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
-          }
-          url    = var.install_script_repo_url
-          branch = var.install_script_repo_branch
-        }
-      )
-    ]
-  }
 }
 
 resource "aws_ebs_volume" "response_ebs_data" {
@@ -927,10 +1096,62 @@ resource "aws_volume_attachment" "response_ebs_vol_attachment" {
   instance_id = aws_instance.response.id
 }
 
-# TODO add response server dns record and outputs
-# TODO consider adding NULL Resource to call a script to format and mount EBS Volume
+#
 
+resource "null_resource" "response_post_deploy_provisioner" {
+  triggers = {
+    appserver = aws_instance.response.id
+  }
 
+  connection {
+    type = "ssh"
+    user = "ubuntu"
+    # local file path to private key
+    private_key = local.server_key
+
+    host = aws_instance.response.private_ip
+
+    bastion_host        = module.ec2_bastion.public_dns
+    bastion_user        = module.ec2_bastion.ssh_user
+    bastion_private_key = local.bastion_key
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      templatefile(
+        "${path.module}/install-script-warpper.tmpl",
+        {
+          script_name = "labkey"
+          debug       = var.debug
+          environment = {
+            LABKEY_APP_HOME                                  = "/labkey"
+            LABKEY_BASE_SERVER_URL                           = "https://${local.response_fqdn}"
+            LABKEY_COMPANY_NAME                              = local.labkey_company_name
+            LABKEY_DISTRIBUTION                              = "community"
+            LABKEY_DIST_FILENAME                             = "LabKey22.3.4-6-community.tar.gz"
+            LABKEY_DIST_URL                                  = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
+            LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
+            LABKEY_HTTPS_PORT                                = "443"
+            LABKEY_HTTP_PORT                                 = "80"
+            LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
+            LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
+            LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
+            LABKEY_SYSTEM_DESCRIPTION                        = "MyStudies Response Server"
+            LABKEY_VERSION                                   = "22.3.4"
+            POSTGRES_PASSWORD                                = nonsensitive(aws_ssm_parameter.response_database_password.value)
+            POSTGRES_SVR_LOCAL                               = "TRUE"
+            TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
+            TOMCAT_INSTALL_TYPE                              = "Standard"
+            TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
+          }
+          url    = var.install_script_repo_url
+          branch = var.install_script_repo_branch
+        }
+      )
+    ]
+  }
+
+}
 
 
 resource "aws_alb_target_group" "mystudies_response_target_https" {
@@ -942,7 +1163,6 @@ resource "aws_alb_target_group" "mystudies_response_target_https" {
   health_check {
     protocol = "HTTPS"
 
-    //TODO make variable
     healthy_threshold   = 2
     interval            = 15
     path                = var.response_target_group_path
@@ -991,53 +1211,6 @@ resource "aws_route53_record" "response_alias_route" {
 }
 
 
-
-
-# resource "aws_instance" "registration" {
-
-#   ami           = data.aws_ami.ubuntu.id
-#   instance_type = local.instance_type
-
-#   tags = merge(
-#     var.additional_tags,
-#     {
-#       Name = "${local.name_prefix}-${each.key}"
-#     },
-#   )
-
-#   lifecycle {
-#     ignore_changes = [tags]
-#   }
-
-#   provisioner "remote-exec" {
-#     inline = <<EOT
-#       ./install-labkey.bash
-#     EOT
-#   }
-# }
-
-# resource "aws_instance" "wcp" {
-
-#   ami           = data.aws_ami.ubuntu.id
-#   instance_type = local.instance_type
-
-#   tags = merge(
-#     var.additional_tags,
-#     {
-#       Name = "${local.name_prefix}-${each.key}"
-#     },
-#   )
-
-#   lifecycle {
-#     ignore_changes = [tags]
-#   }
-
-#   provisioner "remote-exec" {
-#     inline = <<EOT
-#       ./install-wcp.bash
-#     EOT
-#   }
-# }
 
 # TODO consider creating NULL Resource to create a ssh_config file
 

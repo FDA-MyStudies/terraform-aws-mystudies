@@ -164,6 +164,26 @@ output "registration_db_password" {
   sensitive = true
 }
 
+output "registration_fqdn" {
+  value       = element(concat(aws_route53_record.registration_alias_route.*.fqdn, [""]), 0)
+  description = "Registration server fully qualified domain name"
+}
+
+output "registration_url" {
+  value       = "https://${element(concat(aws_route53_record.registration_alias_route.*.fqdn, [""]), 0)}"
+  description = "Registration Server URL"
+}
+
+output "registration_private_ip" {
+  value       = aws_instance.registration.private_ip
+  description = "Private IP of the Registration instance"
+}
+
+output "registration_instance_id" {
+  value       = aws_instance.registration.id
+  description = "Instance ID of the Registration instance"
+}
+
 output "registration_rds_master_pass" {
   value     = random_password.registration_rds_master_pass.result
   sensitive = true

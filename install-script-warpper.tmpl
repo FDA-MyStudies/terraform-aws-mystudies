@@ -9,26 +9,30 @@ export DEBUG=1
 # bash strict mode
 set -euo pipefail
 
-sudo apt-get update
+echo "--- Updating apt packages... ---"
+sleep 5
+sudo apt-get clean
+sudo apt-get update -yqq && sudo apt-get install xfsprogs -yqq
+sleep 15
 
+# install git and clone the install-script repo
 if ! command -v git 2>&1 >/dev/null; then
-  sudo apt-get update -yqq
-  sudo apt-get install git -yqq
+  sudo apt-get install git -y
 fi
 
 tmp_dir="$(mktemp -d)"
 
-git clone ${url} "$tmp_dir"
+git clone "${url}" "$tmp_dir"
 
 %{ for env_key, env_value in environment }
-export ${env_key}="${env_value}"
+export "${env_key}"="${env_value}"
 %{ endfor ~}
 
 cd "$tmp_dir"
 
 %{ if branch != null }
 git fetch
-git checkout remote ${branch}
+git checkout remote "${branch}"
 %{ endif }
 
 %{ if debug }
@@ -36,4 +40,65 @@ env | sort
 ec2metadata
 %{ endif }
 
-sudo -E ./install-${script_name}.bash
+# mount ebs_volume
+# create path to mount ebs volume
+if [ ! -d "/media/ebs_volume" ]; then
+      sudo mkdir -p "/media/ebs_volume"
+      sudo chown -R root:root "/media/ebs_volume"
+fi
+
+ATTACHED_EBS=$(sudo lsblk)
+BLK_ID=""
+if [[ "$ATTACHED_EBS" =~ .*"nvme1n1".* ]]; then
+  # ebs vol is attached check to see if formatted
+  echo "--- EBS Volume is attached... ---"
+  BLK_ID=$(sudo blkid)
+
+  if [[ ! $BLK_ID =~ .*"nvme1n1".* ]]; then
+    # no file system on ebs - format ebs vol
+    echo "--- EBS volume attached...formatting... ---"
+    sudo mkfs -t xfs /dev/nvme1n1
+    # get blk_id and mount
+    BLK_ID=$(sudo blkid /dev/nvme1n1 | cut -f2 -d" ")
+    sudo mount /dev/nvme1n1 /media/ebs_volume
+    # create ebs_vol cookie so we know its mounted
+    date | sudo tee /media/ebs_volume/.ebs_volume
+
+    if [[ -n "$BLK_ID" ]]; then
+      # create fstab entry
+      BLK_ID=$(sudo blkid /dev/nvme1n1 | cut -f2 -d" ")
+      echo "--- Creating fstab entry... ---"
+      echo "$BLK_ID     /media/ebs_volume   xfs    defaults   0   2" | sudo tee --append "/etc/fstab"
+      # update mounts from fstab
+      echo "--- Refreshing mounts from fstab... ---"
+      sudo mount -a
+    else
+        echo "Failed to get blk_id after formatting ebs volume. Something went wrong!"
+        exit 1
+    fi
+  else
+    # ebs volume is formatted - ensure its added to fstab
+    echo "--- EBS volume attached - already has a filesystem... ---"
+    BLK_ID=$(sudo blkid /dev/nvme1n1 | cut -f2 -d" ")
+    if ! grep -qs "$BLK_ID" "/etc/fstab"; then
+      # create fstab entry
+      echo "--- Creating fstab entry... ---"
+      echo "$BLK_ID     /media/ebs_volume   xfs    defaults   0   2" | sudo tee --append "/etc/fstab"
+      sudo mount -a
+      EBS_MOUNTED="$(df -h | grep /dev/nvme1n1 | tr -s " "| cut -f6- -d " ")"
+      if [[ ! -e "/media/ebs_volume/.ebs_volume" && $EBS_MOUNTED == "/media/ebs_volume" ]]; then
+        # create ebs vol cookie if mounted and its missing
+        echo "--- creating ebs_volume cookie... ---"
+        date | sudo tee /media/ebs_volume/.ebs_volume
+      fi
+    else
+      echo "--- fstab already has a entry for ebs volume... ---"
+    fi
+
+  fi
+fi
+
+echo "--- Finished mounting EBS volume - starting install script... ---"
+
+# run install-script
+sudo -E ./install-"${script_name}".bash
