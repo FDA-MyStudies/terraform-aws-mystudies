@@ -54,6 +54,9 @@ locals {
   response_dns_shortname = "response-${local.name_prefix}"
   response_fqdn          = "${local.response_dns_shortname}.${var.base_domain}"
 
+  wcp_dns_shortname = "wcp-${local.name_prefix}"
+  wcp_fqdn          = "${local.wcp_dns_shortname}.${var.base_domain}"
+
   additional_tags = merge(var.common_tags, tomap({
     Prefix      = local.name_prefix
     Environment = var.formation_type
@@ -846,6 +849,7 @@ resource "aws_instance" "registration" {
   lifecycle {
     ignore_changes = [
       tags,
+      volume_tags,
       disable_api_termination,
       iam_instance_profile,
       ebs_optimized
@@ -1044,6 +1048,7 @@ resource "aws_instance" "response" {
   lifecycle {
     ignore_changes = [
       tags,
+      volume_tags,
       disable_api_termination,
       iam_instance_profile,
       ebs_optimized
@@ -1201,6 +1206,205 @@ resource "aws_route53_record" "response_alias_route" {
 
   zone_id = data.aws_route53_zone.env_zone.zone_id
   name    = local.response_dns_shortname
+  type    = "A"
+
+  alias {
+    name                   = module.alb.lb_dns_name
+    zone_id                = module.alb.lb_zone_id
+    evaluate_target_health = false
+  }
+}
+
+########################
+# WCP Instance
+########################
+
+resource "aws_instance" "wcp" {
+
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = local.instance_type
+  # key_name used in ec2 console
+  key_name = var.appserver_private_key
+
+  subnet_id = module.vpc.private_subnets[0]
+
+  vpc_security_group_ids = compact([module.appserver_ssh_sg.security_group_id, module.https_private_sg.security_group_id])
+
+  tags = merge(
+    local.additional_tags,
+    {
+      Name = "${local.name_prefix}-wcp"
+    },
+  )
+
+  volume_tags = merge(
+    local.additional_tags,
+    {
+      "Name" = "${local.name_prefix}-wcp-volume"
+    },
+  )
+
+  lifecycle {
+    ignore_changes = [
+      tags,
+      volume_tags,
+      disable_api_termination,
+      iam_instance_profile,
+      ebs_optimized
+    ]
+  }
+
+  metadata_options {
+    http_endpoint               = "enabled"
+    http_tokens                 = "required"
+    http_put_response_hop_limit = 1
+    instance_metadata_tags      = "enabled"
+  }
+
+  connection {
+    type = "ssh"
+    user = "ubuntu"
+    # local file path to private key
+    private_key = local.server_key
+
+    host = coalesce(self.public_ip, self.private_ip)
+
+    bastion_host        = module.ec2_bastion.public_dns
+    bastion_user        = module.ec2_bastion.ssh_user
+    bastion_private_key = local.bastion_key
+  }
+}
+
+resource "aws_ebs_volume" "wcp_ebs_data" {
+  # deploy only if wcp_ebs_size has a value of > Null
+  count = var.wcp_ebs_size != "" ? 1 : 0
+
+  availability_zone = data.aws_availability_zones.available.names[0]
+  size              = var.wcp_ebs_size
+  encrypted         = true
+  snapshot_id       = var.wcp_ebs_data_snapshot_identifier
+  type              = var.ebs_vol_type
+  tags = merge(
+    local.additional_tags,
+    {
+      "Name" = "${local.name_prefix}-wcp-data-volume"
+    },
+  )
+}
+
+resource "aws_volume_attachment" "wcp_ebs_vol_attachment" {
+  count = var.wcp_ebs_size != "" ? 1 : 0
+
+  device_name = "/dev/sdf"
+  volume_id   = aws_ebs_volume.wcp_ebs_data[0].id
+  instance_id = aws_instance.wcp.id
+}
+
+#
+
+resource "null_resource" "wcp_post_deploy_provisioner" {
+  triggers = {
+    appserver = aws_instance.wcp.id
+  }
+
+  connection {
+    type = "ssh"
+    user = "ubuntu"
+    # local file path to private key
+    private_key = local.server_key
+
+    host = aws_instance.wcp.private_ip
+
+    bastion_host        = module.ec2_bastion.public_dns
+    bastion_user        = module.ec2_bastion.ssh_user
+    bastion_private_key = local.bastion_key
+  }
+
+  provisioner "remote-exec" {
+    inline = [
+      templatefile(
+        "${path.module}/install-script-warpper.tmpl",
+        {
+          script_name = "labkey"
+          debug       = var.debug
+          environment = {
+            LABKEY_APP_HOME                                  = "/labkey"
+            LABKEY_BASE_SERVER_URL                           = "https://${local.wcp_fqdn}"
+            LABKEY_COMPANY_NAME                              = local.labkey_company_name
+            LABKEY_DISTRIBUTION                              = "community"
+            LABKEY_DIST_FILENAME                             = "LabKey22.3.4-6-community.tar.gz"
+            LABKEY_DIST_URL                                  = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
+            LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
+            LABKEY_HTTPS_PORT                                = "443"
+            LABKEY_HTTP_PORT                                 = "80"
+            LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
+            LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
+            LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
+            LABKEY_SYSTEM_DESCRIPTION                        = "MyStudies WCP Server"
+            LABKEY_VERSION                                   = "22.3.4"
+            POSTGRES_PASSWORD                                = nonsensitive(aws_ssm_parameter.wcp_database_password.value)
+            POSTGRES_SVR_LOCAL                               = "TRUE"
+            TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
+            TOMCAT_INSTALL_TYPE                              = "Standard"
+            TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
+          }
+          url    = var.install_script_repo_url
+          branch = var.install_script_repo_branch
+        }
+      )
+    ]
+  }
+
+}
+
+
+resource "aws_alb_target_group" "mystudies_wcp_target_https" {
+  name     = "${var.formation_type}-vpc-${var.formation}-wcp-https"
+  port     = 443
+  protocol = "HTTPS"
+  vpc_id   = module.vpc.vpc_id
+
+  health_check {
+    protocol = "HTTPS"
+
+    healthy_threshold   = 2
+    interval            = 15
+    path                = var.wcp_target_group_path
+    matcher             = "200,302"
+    timeout             = 5
+    unhealthy_threshold = 5
+  }
+
+  tags = local.additional_tags
+}
+
+resource "aws_alb_target_group_attachment" "wcp_attachment_https" {
+  target_group_arn = aws_alb_target_group.mystudies_wcp_target_https.arn
+  target_id        = aws_instance.wcp.id
+  port             = 443
+}
+
+resource "aws_alb_listener_rule" "wcp_listener_rule_https" {
+  listener_arn = aws_alb_listener.alb_https_listener.arn
+  depends_on   = [aws_alb_target_group.mystudies_wcp_target_https]
+  #priority     = var.rule_priority //Required but there is no way to query for next priority
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_alb_target_group.mystudies_wcp_target_https.arn
+  }
+
+  condition {
+    host_header {
+      values = [local.wcp_fqdn]
+    }
+  }
+}
+
+resource "aws_route53_record" "wcp_alias_route" {
+
+  zone_id = data.aws_route53_zone.env_zone.zone_id
+  name    = local.wcp_dns_shortname
   type    = "A"
 
   alias {

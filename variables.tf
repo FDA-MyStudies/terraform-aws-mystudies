@@ -283,6 +283,18 @@ variable "registration_target_group_path" {
   default     = "/"
 }
 
+variable "wcp_ebs_size" {
+  type        = string
+  default     = null
+  description = "WCP Server EBS data volume size"
+}
+
+variable "wcp_ebs_data_snapshot_identifier" {
+  type        = string
+  default     = null
+  description = "Snapshot Id to create the WCP Server ebs data volume from"
+}
+
 variable "wcp_use_rds" {
   type        = bool
   default     = false
@@ -293,6 +305,12 @@ variable "wcp_snapshot_identifier" {
   type        = string
   default     = null
   description = "Snapshot Id to create WCP database from"
+}
+
+variable "wcp_target_group_path" {
+  type        = string
+  description = "Path used for healthcheck on WCP Server"
+  default     = "/"
 }
 
 
