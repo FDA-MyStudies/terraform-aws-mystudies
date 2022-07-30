@@ -1325,28 +1325,49 @@ resource "null_resource" "wcp_post_deploy_provisioner" {
       templatefile(
         "${path.module}/install-script-warpper.tmpl",
         {
-          script_name = "labkey"
+          script_name = "wcp"
           debug       = var.debug
           environment = {
             LABKEY_APP_HOME                                  = "/labkey"
             LABKEY_BASE_SERVER_URL                           = "https://${local.wcp_fqdn}"
             LABKEY_COMPANY_NAME                              = local.labkey_company_name
-            LABKEY_DISTRIBUTION                              = "community"
-            LABKEY_DIST_FILENAME                             = "LabKey22.3.4-6-community.tar.gz"
-            LABKEY_DIST_URL                                  = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
+            LABKEY_CONFIG_DIR                                = "/labkey/apps/tomcat/conf"
             LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
             LABKEY_HTTPS_PORT                                = "443"
             LABKEY_HTTP_PORT                                 = "80"
+            LABKEY_INSTALL_SKIP_MAIN                         = "1"
             LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
             LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
             LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
-            LABKEY_SYSTEM_DESCRIPTION                        = "MyStudies WCP Server"
-            LABKEY_VERSION                                   = "22.3.4"
-            POSTGRES_PASSWORD                                = nonsensitive(aws_ssm_parameter.wcp_database_password.value)
-            POSTGRES_SVR_LOCAL                               = "TRUE"
+            MYSQL_PASSWORD                                   = nonsensitive(aws_ssm_parameter.wcp_database_password.value)
+            MYSQL_ROOT_PASSWORD                              = nonsensitive(aws_ssm_parameter.wcp_rds_master_pass.value)
+            MYSQL_SVR_LOCAL                                  = "TRUE"
+            SMTP_HOST                                        = "localhost"
+            SMTP_PORT                                        = "25"
             TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
             TOMCAT_INSTALL_TYPE                              = "Standard"
+            TOMCAT_TMP_DIR                                   = "/labkey/tomcat-tmp"
             TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
+            TOMCAT_VERSION                                   = "9.0.65"
+            WCP_ADMIN_EMAIL                                  = "donotreply@domain.com"
+            WCP_ADMIN_EMAIL                                  = "donotreply@domain.com"
+            WCP_FEEDBACK_EMAIL                               = "donotreply@domain.com"
+            WCP_FROM_EMAIL                                   = "donotreply@domain.com"
+            WCP_CONTACT_EMAIL                                = "donotreply@domain.com"
+            WCP_APP_CUST_SERVE_EMAIL                         = "donotreply@domain.com"
+            WCP_APP_SERVER_SHUTDOWN_EMAIL                    = "donotreply@domain.com"
+            WCP_APP_AUDIT_FAIL_EMAIL                         = "donotreply@domain.com"
+            WCP_APP_NOTIFY_TITLE                             = "MyStudies"
+            WCP_APP_EMAIL_TITLE                              = "The My Studies Platform Team"
+            WCP_PRIVACY_POLICY_URL                           = "https://www.fda.gov/AboutFDA/AboutThisWebsite/WebsitePolicies/#privacy"
+            WCP_TERMS_URL                                    = "https://www.fda.gov/AboutFDA/AboutThisWebsite/WebsitePolicies/"
+            WCP_DIST_URL                                     = "https://github.com/FDA-MyStudies/WCP/releases/download/22.7.1/wcp_full-22.7.1-41.zip"
+            WCP_DIST_FILENAME                                = "wcp_full-22.7.1-41.zip"
+            WCP_HOSTNAME                                     = "https://${element(concat(aws_route53_record.wcp_alias_route.*.fqdn, [""]), 0)}"
+            WCP_REGISTRATION_URL                             = "https://${element(concat(aws_route53_record.registration_alias_route.*.fqdn, [""]), 0)}"
+            WCP_APP_ENV                                      = var.formation_type
+            WCP_INSTALL_SKIP_INITIALIZE_WCP_DATABASE_STEP    = "1"
+            WCP_INSTALL_SKIP_START_WCP_STEP                  = "1"
           }
           url    = var.install_script_repo_url
           branch = var.install_script_repo_branch
