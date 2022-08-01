@@ -195,19 +195,25 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | [aws_alb_listener.alb_https_listener](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_listener) | resource |
 | [aws_alb_listener_rule.reg_listener_rule_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_listener_rule) | resource |
 | [aws_alb_listener_rule.resp_listener_rule_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_listener_rule) | resource |
+| [aws_alb_listener_rule.wcp_listener_rule_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_listener_rule) | resource |
 | [aws_alb_target_group.default_target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group) | resource |
 | [aws_alb_target_group.mystudies_registration_target_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group) | resource |
 | [aws_alb_target_group.mystudies_response_target_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group) | resource |
+| [aws_alb_target_group.mystudies_wcp_target_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group) | resource |
 | [aws_alb_target_group_attachment.registration_attachment_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group_attachment) | resource |
 | [aws_alb_target_group_attachment.response_attachment_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group_attachment) | resource |
+| [aws_alb_target_group_attachment.wcp_attachment_https](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/alb_target_group_attachment) | resource |
 | [aws_ebs_volume.registration_ebs_data](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_volume) | resource |
 | [aws_ebs_volume.response_ebs_data](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_volume) | resource |
+| [aws_ebs_volume.wcp_ebs_data](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ebs_volume) | resource |
 | [aws_instance.registration](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
 | [aws_instance.response](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
+| [aws_instance.wcp](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/instance) | resource |
 | [aws_kms_key.mystudies_kms_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
 | [aws_lb_listener_certificate.alt_cert](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener_certificate) | resource |
 | [aws_route53_record.registration_alias_route](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_record.response_alias_route](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
+| [aws_route53_record.wcp_alias_route](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_ssm_parameter.registration_database_password](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.registration_mek](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
 | [aws_ssm_parameter.registration_rds_master_pass](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
@@ -218,8 +224,10 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | [aws_ssm_parameter.wcp_rds_master_pass](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ssm_parameter) | resource |
 | [aws_volume_attachment.registration_ebs_vol_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment) | resource |
 | [aws_volume_attachment.response_ebs_vol_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment) | resource |
+| [aws_volume_attachment.wcp_ebs_vol_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/volume_attachment) | resource |
 | [null_resource.registration_post_deploy_provisioner](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
 | [null_resource.response_post_deploy_provisioner](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
+| [null_resource.wcp_post_deploy_provisioner](https://registry.terraform.io/providers/hashicorp/null/latest/docs/resources/resource) | resource |
 | [random_password.registration_database_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [random_password.registration_mek](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [random_password.registration_rds_master_pass](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
@@ -261,11 +269,13 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="input_private_subnets"></a> [private\_subnets](#input\_private\_subnets) | list of private subnets to use when creating vpc | `list(string)` | n/a | yes |
 | <a name="input_public_subnets"></a> [public\_subnets](#input\_public\_subnets) | list of public subnets to use when creating vpc | `list(string)` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | n/a | `string` | `"us-west-2"` | no |
+| <a name="input_registration_create_ec2"></a> [registration\_create\_ec2](#input\_registration\_create\_ec2) | Bool to determine if we should create Registration Ec2 instance. - Used primarily for staged deployment or troubleshooting. | `bool` | `true` | no |
 | <a name="input_registration_ebs_data_snapshot_identifier"></a> [registration\_ebs\_data\_snapshot\_identifier](#input\_registration\_ebs\_data\_snapshot\_identifier) | Snapshot Id to create the Registration Server ebs data volume from | `string` | `null` | no |
 | <a name="input_registration_ebs_size"></a> [registration\_ebs\_size](#input\_registration\_ebs\_size) | Registration Server EBS data volume size | `string` | `null` | no |
 | <a name="input_registration_snapshot_identifier"></a> [registration\_snapshot\_identifier](#input\_registration\_snapshot\_identifier) | Snapshot Id to create Registration database from | `string` | `null` | no |
 | <a name="input_registration_target_group_path"></a> [registration\_target\_group\_path](#input\_registration\_target\_group\_path) | Path used for healthcheck on Registration Server | `string` | `"/"` | no |
 | <a name="input_registration_use_rds"></a> [registration\_use\_rds](#input\_registration\_use\_rds) | Bool to determine use of RDS for Registration Server Database | `bool` | `false` | no |
+| <a name="input_response_create_ec2"></a> [response\_create\_ec2](#input\_response\_create\_ec2) | Bool to determine if we should create Response Ec2 instance. - Used primarily for staged deployment or troubleshooting. | `bool` | `true` | no |
 | <a name="input_response_ebs_data_snapshot_identifier"></a> [response\_ebs\_data\_snapshot\_identifier](#input\_response\_ebs\_data\_snapshot\_identifier) | Snapshot Id to create the Response Server ebs data volume from | `string` | `null` | no |
 | <a name="input_response_ebs_size"></a> [response\_ebs\_size](#input\_response\_ebs\_size) | Response Server EBS data volume size | `string` | `null` | no |
 | <a name="input_response_env_data"></a> [response\_env\_data](#input\_response\_env\_data) | Response Server Environment data content - used to pass in installation env settings | `map(string)` | `{}` | no |
@@ -279,7 +289,11 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="input_use_common_rds_subnet_group"></a> [use\_common\_rds\_subnet\_group](#input\_use\_common\_rds\_subnet\_group) | Bool to determine use of shared RDS subnet group | `bool` | `false` | no |
 | <a name="input_user"></a> [user](#input\_user) | IAM name of user who last ran this script | `string` | `""` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | cidr block for vpc | `string` | `""` | no |
+| <a name="input_wcp_create_ec2"></a> [wcp\_create\_ec2](#input\_wcp\_create\_ec2) | Bool to determine if we should create WCP Ec2 instance. - Used primarily for staged deployment or troubleshooting. | `bool` | `true` | no |
+| <a name="input_wcp_ebs_data_snapshot_identifier"></a> [wcp\_ebs\_data\_snapshot\_identifier](#input\_wcp\_ebs\_data\_snapshot\_identifier) | Snapshot Id to create the WCP Server ebs data volume from | `string` | `null` | no |
+| <a name="input_wcp_ebs_size"></a> [wcp\_ebs\_size](#input\_wcp\_ebs\_size) | WCP Server EBS data volume size | `string` | `null` | no |
 | <a name="input_wcp_snapshot_identifier"></a> [wcp\_snapshot\_identifier](#input\_wcp\_snapshot\_identifier) | Snapshot Id to create WCP database from | `string` | `null` | no |
+| <a name="input_wcp_target_group_path"></a> [wcp\_target\_group\_path](#input\_wcp\_target\_group\_path) | Path used for healthcheck on WCP Server | `string` | `"/"` | no |
 | <a name="input_wcp_use_rds"></a> [wcp\_use\_rds](#input\_wcp\_use\_rds) | Bool to determine use of RDS for WCP Server Database | `bool` | `false` | no |
 
 ## Outputs
@@ -333,5 +347,9 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="output_wcp_db_id"></a> [wcp\_db\_id](#output\_wcp\_db\_id) | ID of WCP RDS database instance |
 | <a name="output_wcp_db_password"></a> [wcp\_db\_password](#output\_wcp\_db\_password) | n/a |
 | <a name="output_wcp_db_sg_id"></a> [wcp\_db\_sg\_id](#output\_wcp\_db\_sg\_id) | Security group ID of WCP RDS database instance |
+| <a name="output_wcp_fqdn"></a> [wcp\_fqdn](#output\_wcp\_fqdn) | WCP server fully qualified domain name |
+| <a name="output_wcp_instance_id"></a> [wcp\_instance\_id](#output\_wcp\_instance\_id) | Instance ID of the WCP instance |
+| <a name="output_wcp_private_ip"></a> [wcp\_private\_ip](#output\_wcp\_private\_ip) | Private IP of the WCP instance |
 | <a name="output_wcp_rds_master_pass"></a> [wcp\_rds\_master\_pass](#output\_wcp\_rds\_master\_pass) | n/a |
+| <a name="output_wcp_url"></a> [wcp\_url](#output\_wcp\_url) | WCP Server URL |
 <!-- END_TF_DOCS -->
