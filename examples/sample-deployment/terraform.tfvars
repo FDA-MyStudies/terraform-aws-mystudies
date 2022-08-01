@@ -81,6 +81,10 @@ registration_ebs_data_snapshot_identifier = ""
 # Deploy Registration RDS DB Instance
 registration_use_rds = false
 
+
+# Deploy WCP EC2 Instance
+wcp_create_ec2 = false
+
 # Deploy WCP RDS DB Instance
 wcp_use_rds = false
 

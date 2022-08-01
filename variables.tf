@@ -283,6 +283,12 @@ variable "registration_target_group_path" {
   default     = "/"
 }
 
+variable "wcp_create_ec2" {
+  type = bool
+  default = true
+  description = "Bool to determine if we should create WCP Ec2 instance. - Used primarily for staged deployment or troubleshooting."
+}
+
 variable "wcp_ebs_size" {
   type        = string
   default     = null

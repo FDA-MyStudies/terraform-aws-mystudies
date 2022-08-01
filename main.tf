@@ -1221,6 +1221,7 @@ resource "aws_route53_record" "response_alias_route" {
 
 resource "aws_instance" "wcp" {
 
+  count         = var.wcp_create_ec2 ? 1 : 0
   ami           = data.aws_ami.ubuntu.id
   instance_type = local.instance_type
   # key_name used in ec2 console
@@ -1277,7 +1278,7 @@ resource "aws_instance" "wcp" {
 
 resource "aws_ebs_volume" "wcp_ebs_data" {
   # deploy only if wcp_ebs_size has a value of > Null
-  count = var.wcp_ebs_size != "" ? 1 : 0
+  count = var.wcp_create_ec2 && var.wcp_ebs_size != "" ? 1 : 0
 
   availability_zone = data.aws_availability_zones.available.names[0]
   size              = var.wcp_ebs_size
@@ -1293,18 +1294,19 @@ resource "aws_ebs_volume" "wcp_ebs_data" {
 }
 
 resource "aws_volume_attachment" "wcp_ebs_vol_attachment" {
-  count = var.wcp_ebs_size != "" ? 1 : 0
+  count = var.wcp_create_ec2 && var.wcp_ebs_size != "" ? 1 : 0
 
   device_name = "/dev/sdf"
   volume_id   = aws_ebs_volume.wcp_ebs_data[0].id
-  instance_id = aws_instance.wcp.id
+  instance_id = aws_instance.wcp[0].id
 }
 
 #
 
 resource "null_resource" "wcp_post_deploy_provisioner" {
+  count =  var.wcp_create_ec2 ? 1 : 0
   triggers = {
-    appserver = aws_instance.wcp.id
+    appserver = aws_instance.wcp[0].id
   }
 
   connection {
@@ -1313,7 +1315,7 @@ resource "null_resource" "wcp_post_deploy_provisioner" {
     # local file path to private key
     private_key = local.server_key
 
-    host = aws_instance.wcp.private_ip
+    host = aws_instance.wcp[0].private_ip
 
     bastion_host        = module.ec2_bastion.public_dns
     bastion_user        = module.ec2_bastion.ssh_user
@@ -1400,8 +1402,9 @@ resource "aws_alb_target_group" "mystudies_wcp_target_https" {
 }
 
 resource "aws_alb_target_group_attachment" "wcp_attachment_https" {
+  count =  var.wcp_create_ec2 ? 1 : 0
   target_group_arn = aws_alb_target_group.mystudies_wcp_target_https.arn
-  target_id        = aws_instance.wcp.id
+  target_id        = aws_instance.wcp[0].id
   port             = 443
 }
 

@@ -62,6 +62,7 @@ module "mystudies" {
   subnet_id                                 = var.subnet_id
   use_common_rds_subnet_group               = var.use_common_rds_subnet_group
   vpc_cidr                                  = var.vpc_cidr
+  wcp_create_ec2                            = var.wcp_create_ec2
   wcp_ebs_data_snapshot_identifier          = var.wcp_ebs_data_snapshot_identifier
   wcp_ebs_size                              = var.wcp_ebs_size
   wcp_snapshot_identifier                   = var.wcp_snapshot_identifier

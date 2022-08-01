@@ -265,11 +265,11 @@ output "wcp_url" {
 }
 
 output "wcp_private_ip" {
-  value       = aws_instance.wcp.private_ip
+  value       = try(aws_instance.wcp[0].private_ip, "")
   description = "Private IP of the WCP instance"
 }
 
 output "wcp_instance_id" {
-  value       = aws_instance.wcp.id
+  value       = try(aws_instance.wcp[0].id, "")
   description = "Instance ID of the WCP instance"
 }
