@@ -822,7 +822,7 @@ data "aws_ami" "ubuntu" {
 ########################
 
 resource "aws_instance" "registration" {
-
+  count         = var.registration_create_ec2 ? 1 : 0
   ami           = data.aws_ami.ubuntu.id
   instance_type = local.instance_type
   # key_name used in ec2 console
@@ -879,7 +879,7 @@ resource "aws_instance" "registration" {
 
 resource "aws_ebs_volume" "registration_ebs_data" {
   # deploy only if registration_ebs_size has a value of > Null
-  count = var.registration_ebs_size != "" ? 1 : 0
+  count = var.registration_create_ec2 && var.registration_ebs_size != "" ? 1 : 0
 
   availability_zone = data.aws_availability_zones.available.names[0]
   size              = var.registration_ebs_size
@@ -895,16 +895,17 @@ resource "aws_ebs_volume" "registration_ebs_data" {
 }
 
 resource "aws_volume_attachment" "registration_ebs_vol_attachment" {
-  count = var.registration_ebs_size != "" ? 1 : 0
+  count = var.registration_create_ec2 && var.registration_ebs_size != "" ? 1 : 0
 
   device_name = "/dev/sdf"
   volume_id   = aws_ebs_volume.registration_ebs_data[0].id
-  instance_id = aws_instance.registration.id
+  instance_id = aws_instance.registration[0].id
 }
 
 resource "null_resource" "registration_post_deploy_provisioner" {
+  count = var.registration_create_ec2 ? 1 : 0
   triggers = {
-    appserver = aws_instance.registration.id
+    appserver = aws_instance.registration[0].id
   }
 
   connection {
@@ -913,7 +914,7 @@ resource "null_resource" "registration_post_deploy_provisioner" {
     # local file path to private key
     private_key = local.server_key
 
-    host = aws_instance.registration.private_ip
+    host = aws_instance.registration[0].private_ip
 
     bastion_host        = module.ec2_bastion.public_dns
     bastion_user        = module.ec2_bastion.ssh_user
@@ -958,6 +959,7 @@ resource "null_resource" "registration_post_deploy_provisioner" {
 }
 
 resource "aws_alb_target_group" "mystudies_registration_target_https" {
+  count    = var.registration_create_ec2 ? 1 : 0
   name     = "${var.formation_type}-vpc-${var.formation}-reg-https"
   port     = 443
   protocol = "HTTPS"
@@ -978,19 +980,21 @@ resource "aws_alb_target_group" "mystudies_registration_target_https" {
 }
 
 resource "aws_alb_target_group_attachment" "registration_attachment_https" {
-  target_group_arn = aws_alb_target_group.mystudies_registration_target_https.arn
-  target_id        = aws_instance.registration.id
+  count            = var.registration_create_ec2 ? 1 : 0
+  target_group_arn = aws_alb_target_group.mystudies_registration_target_https[0].arn
+  target_id        = aws_instance.registration[0].id
   port             = 443
 }
 
 resource "aws_alb_listener_rule" "reg_listener_rule_https" {
+  count        = var.registration_create_ec2 ? 1 : 0
   listener_arn = aws_alb_listener.alb_https_listener.arn
   depends_on   = [aws_alb_target_group.mystudies_registration_target_https]
   #priority     = var.rule_priority //Required but there is no way to query for next priority
 
   action {
     type             = "forward"
-    target_group_arn = aws_alb_target_group.mystudies_registration_target_https.arn
+    target_group_arn = aws_alb_target_group.mystudies_registration_target_https[0].arn
   }
 
   condition {
@@ -1001,7 +1005,7 @@ resource "aws_alb_listener_rule" "reg_listener_rule_https" {
 }
 
 resource "aws_route53_record" "registration_alias_route" {
-
+  count   = var.registration_create_ec2 ? 1 : 0
   zone_id = data.aws_route53_zone.env_zone.zone_id
   name    = local.registration_dns_shortname
   type    = "A"
@@ -1022,6 +1026,7 @@ resource "aws_route53_record" "registration_alias_route" {
 
 resource "aws_instance" "response" {
 
+  count         = var.response_create_ec2 ? 1 : 0
   ami           = data.aws_ami.ubuntu.id
   instance_type = local.instance_type
   # key_name used in ec2 console
@@ -1078,7 +1083,7 @@ resource "aws_instance" "response" {
 
 resource "aws_ebs_volume" "response_ebs_data" {
   # deploy only if response_ebs_size has a value of > Null
-  count = var.response_ebs_size != "" ? 1 : 0
+  count = var.response_create_ec2 && var.response_ebs_size != "" ? 1 : 0
 
   availability_zone = data.aws_availability_zones.available.names[0]
   size              = var.response_ebs_size
@@ -1094,18 +1099,19 @@ resource "aws_ebs_volume" "response_ebs_data" {
 }
 
 resource "aws_volume_attachment" "response_ebs_vol_attachment" {
-  count = var.response_ebs_size != "" ? 1 : 0
+  count = var.response_create_ec2 && var.response_ebs_size != "" ? 1 : 0
 
   device_name = "/dev/sdf"
   volume_id   = aws_ebs_volume.response_ebs_data[0].id
-  instance_id = aws_instance.response.id
+  instance_id = aws_instance.response[0].id
 }
 
 #
 
 resource "null_resource" "response_post_deploy_provisioner" {
+  count = var.response_create_ec2 ? 1 : 0
   triggers = {
-    appserver = aws_instance.response.id
+    appserver = aws_instance.response[0].id
   }
 
   connection {
@@ -1114,7 +1120,7 @@ resource "null_resource" "response_post_deploy_provisioner" {
     # local file path to private key
     private_key = local.server_key
 
-    host = aws_instance.response.private_ip
+    host = aws_instance.response[0].private_ip
 
     bastion_host        = module.ec2_bastion.public_dns
     bastion_user        = module.ec2_bastion.ssh_user
@@ -1160,6 +1166,7 @@ resource "null_resource" "response_post_deploy_provisioner" {
 
 
 resource "aws_alb_target_group" "mystudies_response_target_https" {
+  count    = var.response_create_ec2 ? 1 : 0
   name     = "${var.formation_type}-vpc-${var.formation}-response-https"
   port     = 443
   protocol = "HTTPS"
@@ -1180,19 +1187,21 @@ resource "aws_alb_target_group" "mystudies_response_target_https" {
 }
 
 resource "aws_alb_target_group_attachment" "response_attachment_https" {
-  target_group_arn = aws_alb_target_group.mystudies_response_target_https.arn
-  target_id        = aws_instance.response.id
+  count            = var.response_create_ec2 ? 1 : 0
+  target_group_arn = aws_alb_target_group.mystudies_response_target_https[0].arn
+  target_id        = aws_instance.response[0].id
   port             = 443
 }
 
 resource "aws_alb_listener_rule" "resp_listener_rule_https" {
+  count        = var.response_create_ec2 ? 1 : 0
   listener_arn = aws_alb_listener.alb_https_listener.arn
   depends_on   = [aws_alb_target_group.mystudies_response_target_https]
   #priority     = var.rule_priority //Required but there is no way to query for next priority
 
   action {
     type             = "forward"
-    target_group_arn = aws_alb_target_group.mystudies_response_target_https.arn
+    target_group_arn = aws_alb_target_group.mystudies_response_target_https[0].arn
   }
 
   condition {
@@ -1203,7 +1212,7 @@ resource "aws_alb_listener_rule" "resp_listener_rule_https" {
 }
 
 resource "aws_route53_record" "response_alias_route" {
-
+  count   = var.response_create_ec2 ? 1 : 0
   zone_id = data.aws_route53_zone.env_zone.zone_id
   name    = local.response_dns_shortname
   type    = "A"
@@ -1304,7 +1313,7 @@ resource "aws_volume_attachment" "wcp_ebs_vol_attachment" {
 #
 
 resource "null_resource" "wcp_post_deploy_provisioner" {
-  count =  var.wcp_create_ec2 ? 1 : 0
+  count = var.wcp_create_ec2 ? 1 : 0
   triggers = {
     appserver = aws_instance.wcp[0].id
   }
@@ -1382,6 +1391,7 @@ resource "null_resource" "wcp_post_deploy_provisioner" {
 
 
 resource "aws_alb_target_group" "mystudies_wcp_target_https" {
+  count    = var.wcp_create_ec2 ? 1 : 0
   name     = "${var.formation_type}-vpc-${var.formation}-wcp-https"
   port     = 443
   protocol = "HTTPS"
@@ -1402,20 +1412,21 @@ resource "aws_alb_target_group" "mystudies_wcp_target_https" {
 }
 
 resource "aws_alb_target_group_attachment" "wcp_attachment_https" {
-  count =  var.wcp_create_ec2 ? 1 : 0
-  target_group_arn = aws_alb_target_group.mystudies_wcp_target_https.arn
+  count            = var.wcp_create_ec2 ? 1 : 0
+  target_group_arn = aws_alb_target_group.mystudies_wcp_target_https[0].arn
   target_id        = aws_instance.wcp[0].id
   port             = 443
 }
 
 resource "aws_alb_listener_rule" "wcp_listener_rule_https" {
+  count        = var.wcp_create_ec2 ? 1 : 0
   listener_arn = aws_alb_listener.alb_https_listener.arn
   depends_on   = [aws_alb_target_group.mystudies_wcp_target_https]
   #priority     = var.rule_priority //Required but there is no way to query for next priority
 
   action {
     type             = "forward"
-    target_group_arn = aws_alb_target_group.mystudies_wcp_target_https.arn
+    target_group_arn = aws_alb_target_group.mystudies_wcp_target_https[0].arn
   }
 
   condition {
@@ -1426,7 +1437,7 @@ resource "aws_alb_listener_rule" "wcp_listener_rule_https" {
 }
 
 resource "aws_route53_record" "wcp_alias_route" {
-
+  count   = var.wcp_create_ec2 ? 1 : 0
   zone_id = data.aws_route53_zone.env_zone.zone_id
   name    = local.wcp_dns_shortname
   type    = "A"

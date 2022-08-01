@@ -211,6 +211,12 @@ variable "ebs_vol_type" {
   description = "EBS data volume type - Standard, gp2, gp3, io1, io2, sc1 or sct1"
 }
 
+variable "response_create_ec2" {
+  type        = bool
+  default     = true
+  description = "Bool to determine if we should create Response Ec2 instance. - Used primarily for staged deployment or troubleshooting."
+}
+
 variable "response_ebs_size" {
   type        = string
   default     = null
@@ -253,6 +259,12 @@ variable "response_snapshot_identifier" {
   description = "Snapshot Id to create Response database from"
 }
 
+variable "registration_create_ec2" {
+  type        = bool
+  default     = true
+  description = "Bool to determine if we should create Registration Ec2 instance. - Used primarily for staged deployment or troubleshooting."
+}
+
 variable "registration_ebs_size" {
   type        = string
   default     = null
@@ -284,8 +296,8 @@ variable "registration_target_group_path" {
 }
 
 variable "wcp_create_ec2" {
-  type = bool
-  default = true
+  type        = bool
+  default     = true
   description = "Bool to determine if we should create WCP Ec2 instance. - Used primarily for staged deployment or troubleshooting."
 }
 

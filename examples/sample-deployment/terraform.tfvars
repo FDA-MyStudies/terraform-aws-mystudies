@@ -52,6 +52,9 @@ s3_state_bucket = "tf.syseng.labkey.com"
 
 s3_state_region = "us-west-2"
 
+# Deploy Response EC2 Instance
+response_create_ec2 = false
+
 # Set to null to disable response server ebs data volume - otherwise enter a value in GB
 response_ebs_size = "16"
 
@@ -71,6 +74,9 @@ response_env_data = {
 
 # Deploy Response RDS DB Instance
 response_use_rds = false
+
+# Deploy Registration EC2 Instance
+registration_create_ec2 = false
 
 # Set to null to disable registration server ebs data volume - otherwise enter a value in GB
 registration_ebs_size = "16"

@@ -90,12 +90,12 @@ output "bastion_role" {
 }
 
 output "bastion_public_ip" {
-  value       = module.ec2_bastion.public_ip
+  value       = try(module.ec2_bastion.public_ip, "")
   description = "Public IP of the bastion instance (or EIP)"
 }
 
 output "bastion_private_ip" {
-  value       = module.ec2_bastion.private_ip
+  value       = try(module.ec2_bastion.private_ip, "")
   description = "Private IP of the bastion instance"
 }
 
@@ -145,12 +145,12 @@ output "response_url" {
 }
 
 output "response_private_ip" {
-  value       = aws_instance.response.private_ip
+  value       = try(aws_instance.response[0].private_ip, "")
   description = "Private IP of the Response instance"
 }
 
 output "response_instance_id" {
-  value       = aws_instance.response.id
+  value       = try(aws_instance.response[0].id, "")
   description = "Instance ID of the Response instance"
 }
 
@@ -175,12 +175,12 @@ output "registration_url" {
 }
 
 output "registration_private_ip" {
-  value       = aws_instance.registration.private_ip
+  value       = try(aws_instance.registration[0].private_ip, "")
   description = "Private IP of the Registration instance"
 }
 
 output "registration_instance_id" {
-  value       = aws_instance.registration.id
+  value       = try(aws_instance.registration[0].id, "")
   description = "Instance ID of the Registration instance"
 }
 

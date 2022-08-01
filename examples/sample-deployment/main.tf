@@ -48,11 +48,13 @@ module "mystudies" {
   private_key_path                          = var.private_key_path
   private_subnets                           = var.private_subnets
   public_subnets                            = var.public_subnets
+  registration_create_ec2                   = var.registration_create_ec2
   registration_ebs_data_snapshot_identifier = var.registration_snapshot_identifier
   registration_ebs_size                     = var.registration_ebs_size
   registration_snapshot_identifier          = var.registration_snapshot_identifier
   registration_target_group_path            = var.registration_target_group_path
   registration_use_rds                      = var.registration_use_rds
+  response_create_ec2                       = var.response_create_ec2
   response_ebs_data_snapshot_identifier     = var.response_ebs_data_snapshot_identifier
   response_ebs_size                         = var.response_ebs_size
   response_snapshot_identifier              = var.response_snapshot_identifier
