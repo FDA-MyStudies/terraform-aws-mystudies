@@ -152,11 +152,13 @@ No resources.
 | <a name="input_private_subnets"></a> [private\_subnets](#input\_private\_subnets) | list of private subnets to use when creating vpc | `list(string)` | n/a | yes |
 | <a name="input_public_subnets"></a> [public\_subnets](#input\_public\_subnets) | list of public subnets to use when creating vpc | `list(string)` | n/a | yes |
 | <a name="input_region"></a> [region](#input\_region) | n/a | `string` | `"us-west-2"` | no |
+| <a name="input_registration_create_ec2"></a> [registration\_create\_ec2](#input\_registration\_create\_ec2) | Bool to determine if we should create Registration Ec2 instance. - Used primarily for staged deployment or troubleshooting. | `bool` | `true` | no |
 | <a name="input_registration_ebs_data_snapshot_identifier"></a> [registration\_ebs\_data\_snapshot\_identifier](#input\_registration\_ebs\_data\_snapshot\_identifier) | Snapshot Id to create the Registration Server ebs data volume from | `string` | `null` | no |
 | <a name="input_registration_ebs_size"></a> [registration\_ebs\_size](#input\_registration\_ebs\_size) | Registration Server EBS data volume size | `string` | `null` | no |
 | <a name="input_registration_snapshot_identifier"></a> [registration\_snapshot\_identifier](#input\_registration\_snapshot\_identifier) | Snapshot Id to create Registration database from | `string` | `null` | no |
 | <a name="input_registration_target_group_path"></a> [registration\_target\_group\_path](#input\_registration\_target\_group\_path) | Path used for healthcheck on Registration Server | `string` | `"/"` | no |
 | <a name="input_registration_use_rds"></a> [registration\_use\_rds](#input\_registration\_use\_rds) | Bool to determine use of RDS for Registration Server Database | `bool` | `false` | no |
+| <a name="input_response_create_ec2"></a> [response\_create\_ec2](#input\_response\_create\_ec2) | Bool to determine if we should create Response Ec2 instance. - Used primarily for staged deployment or troubleshooting. | `bool` | `true` | no |
 | <a name="input_response_ebs_data_snapshot_identifier"></a> [response\_ebs\_data\_snapshot\_identifier](#input\_response\_ebs\_data\_snapshot\_identifier) | Snapshot Id to create the Response Server ebs data volume from | `string` | `null` | no |
 | <a name="input_response_ebs_size"></a> [response\_ebs\_size](#input\_response\_ebs\_size) | Response Server EBS data volume size | `string` | `null` | no |
 | <a name="input_response_env_data"></a> [response\_env\_data](#input\_response\_env\_data) | Response Server Environment data content - used to pass in installation env settings | `map(string)` | `{}` | no |
@@ -170,7 +172,11 @@ No resources.
 | <a name="input_use_common_rds_subnet_group"></a> [use\_common\_rds\_subnet\_group](#input\_use\_common\_rds\_subnet\_group) | Bool to determine use of shared RDS subnet group | `bool` | `false` | no |
 | <a name="input_user"></a> [user](#input\_user) | IAM name of user who last ran this script | `string` | `""` | no |
 | <a name="input_vpc_cidr"></a> [vpc\_cidr](#input\_vpc\_cidr) | cidr block for vpc | `string` | `""` | no |
+| <a name="input_wcp_create_ec2"></a> [wcp\_create\_ec2](#input\_wcp\_create\_ec2) | Bool to determine if we should create WCP Ec2 instance. - Used primarily for staged deployment or troubleshooting. | `bool` | `true` | no |
+| <a name="input_wcp_ebs_data_snapshot_identifier"></a> [wcp\_ebs\_data\_snapshot\_identifier](#input\_wcp\_ebs\_data\_snapshot\_identifier) | Snapshot Id to create the WCP Server ebs data volume from | `string` | `null` | no |
+| <a name="input_wcp_ebs_size"></a> [wcp\_ebs\_size](#input\_wcp\_ebs\_size) | WCP Server EBS data volume size | `string` | `null` | no |
 | <a name="input_wcp_snapshot_identifier"></a> [wcp\_snapshot\_identifier](#input\_wcp\_snapshot\_identifier) | Snapshot Id to create WCP database from | `string` | `null` | no |
+| <a name="input_wcp_target_group_path"></a> [wcp\_target\_group\_path](#input\_wcp\_target\_group\_path) | Path used for healthcheck on WCP Server | `string` | `"/"` | no |
 | <a name="input_wcp_use_rds"></a> [wcp\_use\_rds](#input\_wcp\_use\_rds) | Bool to determine use of RDS for WCP Server Database | `bool` | `false` | no |
 
 ## Outputs
@@ -224,5 +230,9 @@ No resources.
 | <a name="output_wcp_db_id"></a> [wcp\_db\_id](#output\_wcp\_db\_id) | ID of WCP RDS database instance |
 | <a name="output_wcp_db_password"></a> [wcp\_db\_password](#output\_wcp\_db\_password) | n/a |
 | <a name="output_wcp_db_sg_id"></a> [wcp\_db\_sg\_id](#output\_wcp\_db\_sg\_id) | Security group ID of WCP RDS database instance |
+| <a name="output_wcp_fqdn"></a> [wcp\_fqdn](#output\_wcp\_fqdn) | WCP server fully qualified domain name |
+| <a name="output_wcp_instance_id"></a> [wcp\_instance\_id](#output\_wcp\_instance\_id) | Instance ID of the WCP instance |
+| <a name="output_wcp_private_ip"></a> [wcp\_private\_ip](#output\_wcp\_private\_ip) | Private IP of the WCP instance |
 | <a name="output_wcp_rds_master_pass"></a> [wcp\_rds\_master\_pass](#output\_wcp\_rds\_master\_pass) | n/a |
+| <a name="output_wcp_url"></a> [wcp\_url](#output\_wcp\_url) | WCP Server URL |
 <!-- END_TF_DOCS -->
