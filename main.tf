@@ -878,7 +878,6 @@ resource "aws_instance" "registration" {
 }
 
 resource "aws_ebs_volume" "registration_ebs_data" {
-  # deploy only if registration_ebs_size has a value of > Null
   count = var.registration_create_ec2 && var.registration_ebs_size != "" ? 1 : 0
 
   availability_zone = data.aws_availability_zones.available.names[0]
@@ -1082,7 +1081,6 @@ resource "aws_instance" "response" {
 }
 
 resource "aws_ebs_volume" "response_ebs_data" {
-  # deploy only if response_ebs_size has a value of > Null
   count = var.response_create_ec2 && var.response_ebs_size != "" ? 1 : 0
 
   availability_zone = data.aws_availability_zones.available.names[0]
@@ -1286,7 +1284,6 @@ resource "aws_instance" "wcp" {
 }
 
 resource "aws_ebs_volume" "wcp_ebs_data" {
-  # deploy only if wcp_ebs_size has a value of > Null
   count = var.wcp_create_ec2 && var.wcp_ebs_size != "" ? 1 : 0
 
   availability_zone = data.aws_availability_zones.available.names[0]
