@@ -234,6 +234,26 @@ output "registration_db_sg_id" {
   description = "Security group ID of Registration RDS database instance"
 }
 
+output "wcp_fqdn" {
+  value       = module.mystudies.wcp_fqdn
+  description = "WCP server fully qualified domain name"
+}
+
+output "wcp_url" {
+  value       = module.mystudies.wcp_url
+  description = "WCP Server URL"
+}
+
+output "wcp_private_ip" {
+  value       = module.mystudies.wcp_private_ip
+  description = "Private IP of the WCP instance"
+}
+
+output "wcp_instance_id" {
+  value       = module.mystudies.wcp_instance_id
+  description = "Instance ID of the WCP instance"
+}
+
 output "wcp_rds_master_pass" {
   value     = module.mystudies.wcp_rds_master_pass
   sensitive = true
