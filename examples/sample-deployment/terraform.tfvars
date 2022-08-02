@@ -53,7 +53,7 @@ s3_state_bucket = "tf.syseng.labkey.com"
 s3_state_region = "us-west-2"
 
 # Deploy Response EC2 Instance
-response_create_ec2 = false
+response_create_ec2 = true
 
 # Set to null to disable response server ebs data volume - otherwise enter a value in GB
 response_ebs_size = "16"
@@ -76,7 +76,7 @@ response_env_data = {
 response_use_rds = false
 
 # Deploy Registration EC2 Instance
-registration_create_ec2 = false
+registration_create_ec2 = true
 
 # Set to null to disable registration server ebs data volume - otherwise enter a value in GB
 registration_ebs_size = "16"
@@ -89,7 +89,7 @@ registration_use_rds = false
 
 
 # Deploy WCP EC2 Instance
-wcp_create_ec2 = false
+wcp_create_ec2 = true
 
 # Deploy WCP RDS DB Instance
 wcp_use_rds = false
@@ -104,7 +104,7 @@ wcp_ebs_data_snapshot_identifier = ""
 wcp_ebs_size = "16"
 
 # URL Path used for wcp server health check - e.g. "/mystudies_images/"
-wcp_target_group_path = "/"
+wcp_target_group_path = "/mystudies_images/"
 
 # Use Common RDS Subnet Group for RDS instances
 use_common_rds_subnet_group = true

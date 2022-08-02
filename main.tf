@@ -1374,8 +1374,6 @@ resource "null_resource" "wcp_post_deploy_provisioner" {
             WCP_HOSTNAME                                     = "https://${element(concat(aws_route53_record.wcp_alias_route.*.fqdn, [""]), 0)}"
             WCP_REGISTRATION_URL                             = "https://${element(concat(aws_route53_record.registration_alias_route.*.fqdn, [""]), 0)}"
             WCP_APP_ENV                                      = var.formation_type
-            WCP_INSTALL_SKIP_INITIALIZE_WCP_DATABASE_STEP    = "1"
-            WCP_INSTALL_SKIP_START_WCP_STEP                  = "1"
           }
           url    = var.install_script_repo_url
           branch = var.install_script_repo_branch
