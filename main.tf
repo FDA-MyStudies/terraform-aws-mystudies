@@ -923,7 +923,7 @@ resource "null_resource" "registration_post_deploy_provisioner" {
   provisioner "remote-exec" {
     inline = [
       templatefile(
-        "${path.module}/install-script-warpper.tmpl",
+        "${path.module}/install-script-wrapper.tmpl",
         {
           script_name = "labkey"
           debug       = var.debug
@@ -1128,7 +1128,7 @@ resource "null_resource" "response_post_deploy_provisioner" {
   provisioner "remote-exec" {
     inline = [
       templatefile(
-        "${path.module}/install-script-warpper.tmpl",
+        "${path.module}/install-script-wrapper.tmpl",
         {
           script_name = "labkey"
           debug       = var.debug
@@ -1331,7 +1331,7 @@ resource "null_resource" "wcp_post_deploy_provisioner" {
   provisioner "remote-exec" {
     inline = [
       templatefile(
-        "${path.module}/install-script-warpper.tmpl",
+        "${path.module}/install-script-wrapper.tmpl",
         {
           script_name = "wcp"
           debug       = var.debug
