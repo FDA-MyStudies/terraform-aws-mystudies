@@ -63,14 +63,8 @@ locals {
     Formation   = var.formation
   }))
 
-  instance_type = "t3a.large"
+  instance_type = var.appserver_instance_type
 
-  # values for labkey install script(s)
-  labkey_company_name = "MyStudies Reference Deployment"
-  labkey_app_home     = "/labkey"
-  labkey_files_root   = "/labkey/labkey/"
-
-  # values for wcp install script(s)
 }
 
 ###############################################################################################
@@ -927,27 +921,24 @@ resource "null_resource" "registration_post_deploy_provisioner" {
         {
           script_name = "labkey"
           debug       = var.debug
-          environment = {
-            LABKEY_APP_HOME                                  = "/labkey"
-            LABKEY_BASE_SERVER_URL                           = "https://${local.registration_fqdn}"
-            LABKEY_COMPANY_NAME                              = local.labkey_company_name
-            LABKEY_DISTRIBUTION                              = "community"
-            LABKEY_DIST_FILENAME                             = "LabKey22.3.4-6-community.tar.gz"
-            LABKEY_DIST_URL                                  = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
-            LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
-            LABKEY_HTTPS_PORT                                = "443"
-            LABKEY_HTTP_PORT                                 = "80"
-            LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
-            LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
-            LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
-            LABKEY_SYSTEM_DESCRIPTION                        = "MyStudies Registration Server"
-            LABKEY_VERSION                                   = "22.3.4"
-            POSTGRES_PASSWORD                                = nonsensitive(aws_ssm_parameter.registration_database_password.value)
-            POSTGRES_SVR_LOCAL                               = "TRUE"
-            TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
-            TOMCAT_INSTALL_TYPE                              = "Standard"
-            TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
-          }
+          # merge user defined registration env with fixed values
+          environment = merge(var.registration_env_data,
+            {
+              LABKEY_APP_HOME                                  = "/labkey"
+              LABKEY_BASE_SERVER_URL                           = "https://${local.registration_fqdn}"
+              LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
+              LABKEY_HTTPS_PORT                                = "443"
+              LABKEY_HTTP_PORT                                 = "80"
+              LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
+              LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
+              LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
+              POSTGRES_PASSWORD                                = nonsensitive(aws_ssm_parameter.registration_database_password.value)
+              POSTGRES_SVR_LOCAL                               = "TRUE"
+              TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
+              TOMCAT_INSTALL_TYPE                              = "Standard"
+              TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
+            }
+          )
           url    = var.install_script_repo_url
           branch = var.install_script_repo_branch
         }
@@ -1132,27 +1123,24 @@ resource "null_resource" "response_post_deploy_provisioner" {
         {
           script_name = "labkey"
           debug       = var.debug
-          environment = {
-            LABKEY_APP_HOME                                  = "/labkey"
-            LABKEY_BASE_SERVER_URL                           = "https://${local.response_fqdn}"
-            LABKEY_COMPANY_NAME                              = local.labkey_company_name
-            LABKEY_DISTRIBUTION                              = "community"
-            LABKEY_DIST_FILENAME                             = "LabKey22.3.4-6-community.tar.gz"
-            LABKEY_DIST_URL                                  = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
-            LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
-            LABKEY_HTTPS_PORT                                = "443"
-            LABKEY_HTTP_PORT                                 = "80"
-            LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
-            LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
-            LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
-            LABKEY_SYSTEM_DESCRIPTION                        = "MyStudies Response Server"
-            LABKEY_VERSION                                   = "22.3.4"
-            POSTGRES_PASSWORD                                = nonsensitive(aws_ssm_parameter.response_database_password.value)
-            POSTGRES_SVR_LOCAL                               = "TRUE"
-            TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
-            TOMCAT_INSTALL_TYPE                              = "Standard"
-            TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
-          }
+          # merge user defined response env with fixed values
+          environment = merge(var.response_env_data,
+            {
+              LABKEY_APP_HOME                                  = "/labkey"
+              LABKEY_BASE_SERVER_URL                           = "https://${local.response_fqdn}"
+              LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
+              LABKEY_HTTPS_PORT                                = "443"
+              LABKEY_HTTP_PORT                                 = "80"
+              LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
+              LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
+              LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
+              LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
+              POSTGRES_PASSWORD                                = nonsensitive(aws_ssm_parameter.response_database_password.value)
+              TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
+              TOMCAT_INSTALL_TYPE                              = "Standard"
+              TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
+            }
+          )
           url    = var.install_script_repo_url
           branch = var.install_script_repo_branch
         }
@@ -1335,46 +1323,32 @@ resource "null_resource" "wcp_post_deploy_provisioner" {
         {
           script_name = "wcp"
           debug       = var.debug
-          environment = {
-            LABKEY_APP_HOME                                  = "/labkey"
-            LABKEY_BASE_SERVER_URL                           = "https://${local.wcp_fqdn}"
-            LABKEY_COMPANY_NAME                              = local.labkey_company_name
-            LABKEY_CONFIG_DIR                                = "/labkey/apps/tomcat/conf"
-            LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
-            LABKEY_HTTPS_PORT                                = "443"
-            LABKEY_HTTP_PORT                                 = "80"
-            LABKEY_INSTALL_SKIP_MAIN                         = "1"
-            LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
-            LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
-            LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
-            MYSQL_PASSWORD                                   = nonsensitive(aws_ssm_parameter.wcp_database_password.value)
-            MYSQL_ROOT_PASSWORD                              = nonsensitive(aws_ssm_parameter.wcp_rds_master_pass.value)
-            MYSQL_SVR_LOCAL                                  = "TRUE"
-            SMTP_HOST                                        = "localhost"
-            SMTP_PORT                                        = "25"
-            TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
-            TOMCAT_INSTALL_TYPE                              = "Standard"
-            TOMCAT_TMP_DIR                                   = "/labkey/tomcat-tmp"
-            TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
-            TOMCAT_VERSION                                   = "9.0.65"
-            WCP_ADMIN_EMAIL                                  = "donotreply@domain.com"
-            WCP_ADMIN_EMAIL                                  = "donotreply@domain.com"
-            WCP_FEEDBACK_EMAIL                               = "donotreply@domain.com"
-            WCP_FROM_EMAIL                                   = "donotreply@domain.com"
-            WCP_CONTACT_EMAIL                                = "donotreply@domain.com"
-            WCP_APP_CUST_SERVE_EMAIL                         = "donotreply@domain.com"
-            WCP_APP_SERVER_SHUTDOWN_EMAIL                    = "donotreply@domain.com"
-            WCP_APP_AUDIT_FAIL_EMAIL                         = "donotreply@domain.com"
-            WCP_APP_NOTIFY_TITLE                             = "MyStudies"
-            WCP_APP_EMAIL_TITLE                              = "The My Studies Platform Team"
-            WCP_PRIVACY_POLICY_URL                           = "https://www.fda.gov/AboutFDA/AboutThisWebsite/WebsitePolicies/#privacy"
-            WCP_TERMS_URL                                    = "https://www.fda.gov/AboutFDA/AboutThisWebsite/WebsitePolicies/"
-            WCP_DIST_URL                                     = "https://github.com/FDA-MyStudies/WCP/releases/download/22.7.1/wcp_full-22.7.1-41.zip"
-            WCP_DIST_FILENAME                                = "wcp_full-22.7.1-41.zip"
-            WCP_HOSTNAME                                     = "https://${element(concat(aws_route53_record.wcp_alias_route.*.fqdn, [""]), 0)}"
-            WCP_REGISTRATION_URL                             = "https://${element(concat(aws_route53_record.registration_alias_route.*.fqdn, [""]), 0)}"
-            WCP_APP_ENV                                      = var.formation_type
-          }
+          # merge user defined wcp env with fixed values
+          environment = merge(var.wcp_env_data,
+            {
+              LABKEY_APP_HOME                                  = "/labkey"
+              LABKEY_BASE_SERVER_URL                           = "https://${local.wcp_fqdn}"
+              LABKEY_CONFIG_DIR                                = "/labkey/apps/tomcat/conf"
+              LABKEY_FILES_ROOT                                = "/labkey/labkey/files"
+              LABKEY_HTTPS_PORT                                = "443"
+              LABKEY_HTTP_PORT                                 = "80"
+              LABKEY_INSTALL_SKIP_MAIN                         = "1"
+              LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
+              LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
+              LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
+              MYSQL_PASSWORD                                   = nonsensitive(aws_ssm_parameter.wcp_database_password.value)
+              MYSQL_ROOT_PASSWORD                              = nonsensitive(aws_ssm_parameter.wcp_rds_master_pass.value)
+              SMTP_HOST                                        = "localhost"
+              SMTP_PORT                                        = "25"
+              TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
+              TOMCAT_INSTALL_TYPE                              = "Standard"
+              TOMCAT_TMP_DIR                                   = "/labkey/tomcat-tmp"
+              TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
+              WCP_HOSTNAME                                     = "https://${element(concat(aws_route53_record.wcp_alias_route.*.fqdn, [""]), 0)}"
+              WCP_REGISTRATION_URL                             = "https://${element(concat(aws_route53_record.registration_alias_route.*.fqdn, [""]), 0)}"
+              WCP_APP_ENV                                      = var.formation_type
+            }
+          )
           url    = var.install_script_repo_url
           branch = var.install_script_repo_branch
         }

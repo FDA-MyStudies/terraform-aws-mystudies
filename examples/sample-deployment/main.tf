@@ -51,12 +51,14 @@ module "mystudies" {
   registration_create_ec2                   = var.registration_create_ec2
   registration_ebs_data_snapshot_identifier = var.registration_snapshot_identifier
   registration_ebs_size                     = var.registration_ebs_size
+  registration_env_data                     = var.registration_env_data
   registration_snapshot_identifier          = var.registration_snapshot_identifier
   registration_target_group_path            = var.registration_target_group_path
   registration_use_rds                      = var.registration_use_rds
   response_create_ec2                       = var.response_create_ec2
   response_ebs_data_snapshot_identifier     = var.response_ebs_data_snapshot_identifier
   response_ebs_size                         = var.response_ebs_size
+  response_env_data                         = var.response_env_data
   response_snapshot_identifier              = var.response_snapshot_identifier
   response_target_group_path                = var.response_target_group_path
   response_use_rds                          = var.response_use_rds
@@ -67,6 +69,7 @@ module "mystudies" {
   wcp_create_ec2                            = var.wcp_create_ec2
   wcp_ebs_data_snapshot_identifier          = var.wcp_ebs_data_snapshot_identifier
   wcp_ebs_size                              = var.wcp_ebs_size
+  wcp_env_data                              = var.wcp_env_data
   wcp_snapshot_identifier                   = var.wcp_snapshot_identifier
   wcp_target_group_path                     = var.wcp_target_group_path
   wcp_use_rds                               = var.wcp_use_rds

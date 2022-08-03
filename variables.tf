@@ -175,6 +175,11 @@ variable "office_cidr_B" {
   description = "CIDR of authorized office B - used for SSM remote admin access to instances"
 }
 
+variable "appserver_instance_type" {
+  type        = string
+  default     = "t3a.large"
+  description = "Ec2 Instance type used for appserver deployment"
+}
 
 
 // Base Domain used by applications to look-up hosted zone and make DNS records
@@ -205,6 +210,7 @@ variable "alb_ssl_policy" {
   # http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/elb-security-policy-table.html
   default = "ELBSecurityPolicy-TLS-1-2-2017-01"
 }
+
 variable "ebs_vol_type" {
   type        = string
   default     = "gp3"
@@ -277,6 +283,12 @@ variable "registration_ebs_data_snapshot_identifier" {
   description = "Snapshot Id to create the Registration Server ebs data volume from"
 }
 
+variable "registration_env_data" {
+  type        = map(string)
+  default     = {}
+  description = "Registration Server Environment data content - used to pass in installation env settings"
+}
+
 variable "registration_use_rds" {
   type        = bool
   default     = false
@@ -311,6 +323,12 @@ variable "wcp_ebs_data_snapshot_identifier" {
   type        = string
   default     = null
   description = "Snapshot Id to create the WCP Server ebs data volume from"
+}
+
+variable "wcp_env_data" {
+  type        = map(string)
+  default     = {}
+  description = "WCP Server Environment data content - used to pass in installation env settings"
 }
 
 variable "wcp_use_rds" {
