@@ -246,6 +246,7 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 |------|-------------|------|---------|:--------:|
 | <a name="input_alb_ssl_policy"></a> [alb\_ssl\_policy](#input\_alb\_ssl\_policy) | n/a | `string` | `"ELBSecurityPolicy-TLS-1-2-2017-01"` | no |
 | <a name="input_alt_alb_ssl_cert_arn"></a> [alt\_alb\_ssl\_cert\_arn](#input\_alt\_alb\_ssl\_cert\_arn) | ARN of existing TLS Certificate to use with ALB | `string` | n/a | yes |
+| <a name="input_appserver_instance_type"></a> [appserver\_instance\_type](#input\_appserver\_instance\_type) | Ec2 Instance type used for appserver deployment | `string` | `"t3a.large"` | no |
 | <a name="input_appserver_private_key"></a> [appserver\_private\_key](#input\_appserver\_private\_key) | Name of private key used to ssh to appserver | `string` | `""` | no |
 | <a name="input_azs"></a> [azs](#input\_azs) | A list of availability zones in the region | `list(string)` | `[]` | no |
 | <a name="input_base_domain"></a> [base\_domain](#input\_base\_domain) | A domain name for which the certificate should be issued | `string` | `"lkpoc.labkey.com"` | no |
@@ -272,6 +273,7 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="input_registration_create_ec2"></a> [registration\_create\_ec2](#input\_registration\_create\_ec2) | Bool to determine if we should create Registration Ec2 instance. - Used primarily for staged deployment or troubleshooting. | `bool` | `true` | no |
 | <a name="input_registration_ebs_data_snapshot_identifier"></a> [registration\_ebs\_data\_snapshot\_identifier](#input\_registration\_ebs\_data\_snapshot\_identifier) | Snapshot Id to create the Registration Server ebs data volume from | `string` | `null` | no |
 | <a name="input_registration_ebs_size"></a> [registration\_ebs\_size](#input\_registration\_ebs\_size) | Registration Server EBS data volume size | `string` | `null` | no |
+| <a name="input_registration_env_data"></a> [registration\_env\_data](#input\_registration\_env\_data) | Registration Server Environment data content - used to pass in installation env settings | `map(string)` | `{}` | no |
 | <a name="input_registration_snapshot_identifier"></a> [registration\_snapshot\_identifier](#input\_registration\_snapshot\_identifier) | Snapshot Id to create Registration database from | `string` | `null` | no |
 | <a name="input_registration_target_group_path"></a> [registration\_target\_group\_path](#input\_registration\_target\_group\_path) | Path used for healthcheck on Registration Server | `string` | `"/"` | no |
 | <a name="input_registration_use_rds"></a> [registration\_use\_rds](#input\_registration\_use\_rds) | Bool to determine use of RDS for Registration Server Database | `bool` | `false` | no |
@@ -292,6 +294,7 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="input_wcp_create_ec2"></a> [wcp\_create\_ec2](#input\_wcp\_create\_ec2) | Bool to determine if we should create WCP Ec2 instance. - Used primarily for staged deployment or troubleshooting. | `bool` | `true` | no |
 | <a name="input_wcp_ebs_data_snapshot_identifier"></a> [wcp\_ebs\_data\_snapshot\_identifier](#input\_wcp\_ebs\_data\_snapshot\_identifier) | Snapshot Id to create the WCP Server ebs data volume from | `string` | `null` | no |
 | <a name="input_wcp_ebs_size"></a> [wcp\_ebs\_size](#input\_wcp\_ebs\_size) | WCP Server EBS data volume size | `string` | `null` | no |
+| <a name="input_wcp_env_data"></a> [wcp\_env\_data](#input\_wcp\_env\_data) | WCP Server Environment data content - used to pass in installation env settings | `map(string)` | `{}` | no |
 | <a name="input_wcp_snapshot_identifier"></a> [wcp\_snapshot\_identifier](#input\_wcp\_snapshot\_identifier) | Snapshot Id to create WCP database from | `string` | `null` | no |
 | <a name="input_wcp_target_group_path"></a> [wcp\_target\_group\_path](#input\_wcp\_target\_group\_path) | Path used for healthcheck on WCP Server | `string` | `"/"` | no |
 | <a name="input_wcp_use_rds"></a> [wcp\_use\_rds](#input\_wcp\_use\_rds) | Bool to determine use of RDS for WCP Server Database | `bool` | `false` | no |
