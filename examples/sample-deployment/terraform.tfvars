@@ -24,6 +24,8 @@ office_cidr_A = "144.202.87.91/32"
 
 office_cidr_B = "131.226.35.101/32"
 
+appserver_instance_type = "t3a.large"
+
 appserver_private_key = "4c2795d-20210823"
 
 bastion_private_key = "4c2795d-20210823"
@@ -62,11 +64,14 @@ response_ebs_size = "16"
 response_ebs_data_snapshot_identifier = ""
 
 response_env_data = {
-  LABKEY_APP_HOME             = "/labkey",
-  LABKEY_FILES_ROOT           = "/labkey/labkey/files",
-  TOMCAT_USE_PRIVILEGED_PORTS = "TRUE",
-  LABKEY_HTTP_PORT            = "80",
-  LABKEY_HTTPS_PORT           = "443"
+  LABKEY_COMPANY_NAME       = "LabKey"
+  LABKEY_DISTRIBUTION       = "community"
+  LABKEY_DIST_FILENAME      = "LabKey22.3.4-6-community.tar.gz"
+  LABKEY_DIST_URL           = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
+  LABKEY_SYSTEM_DESCRIPTION = "MyStudies Response Server"
+  LABKEY_VERSION            = "22.3.4"
+  POSTGRES_SVR_LOCAL        = "TRUE"
+  TOMCAT_VERSION            = "9.0.65"
 }
 
 #response_target_group_path =""
@@ -83,6 +88,16 @@ registration_ebs_size = "16"
 
 # Snapshot ID used as source for registration ebs data volume - Null = empty volume
 registration_ebs_data_snapshot_identifier = ""
+
+registration_env_data = {
+  LABKEY_COMPANY_NAME       = "LabKey"
+  LABKEY_DISTRIBUTION       = "community"
+  LABKEY_DIST_FILENAME      = "LabKey22.3.4-6-community.tar.gz"
+  LABKEY_DIST_URL           = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
+  LABKEY_SYSTEM_DESCRIPTION = "MyStudies Registration Server"
+  LABKEY_VERSION            = "22.3.4"
+  TOMCAT_VERSION            = "9.0.65"
+}
 
 # Deploy Registration RDS DB Instance
 registration_use_rds = false
@@ -102,6 +117,26 @@ wcp_ebs_data_snapshot_identifier = ""
 
 # Set to null to disable wcp server ebs data volume - otherwise enter a value in GB
 wcp_ebs_size = "16"
+
+wcp_env_data = {
+  LABKEY_COMPANY_NAME           = "LabKey"
+  MYSQL_SVR_LOCAL               = "TRUE"
+  TOMCAT_VERSION                = "9.0.65"
+  WCP_ADMIN_EMAIL               = "donotreply@domain.com"
+  WCP_ADMIN_EMAIL               = "donotreply@domain.com"
+  WCP_APP_AUDIT_FAIL_EMAIL      = "donotreply@domain.com"
+  WCP_APP_CUST_SERVE_EMAIL      = "donotreply@domain.com"
+  WCP_APP_EMAIL_TITLE           = "The My Studies Platform Team"
+  WCP_APP_NOTIFY_TITLE          = "MyStudies"
+  WCP_APP_SERVER_SHUTDOWN_EMAIL = "donotreply@domain.com"
+  WCP_CONTACT_EMAIL             = "donotreply@domain.com"
+  WCP_DIST_FILENAME             = "wcp_full-22.7.1-41.zip"
+  WCP_DIST_URL                  = "https://github.com/FDA-MyStudies/WCP/releases/download/22.7.1/wcp_full-22.7.1-41.zip"
+  WCP_FEEDBACK_EMAIL            = "donotreply@domain.com"
+  WCP_FROM_EMAIL                = "donotreply@domain.com"
+  WCP_PRIVACY_POLICY_URL        = "https://www.fda.gov/AboutFDA/AboutThisWebsite/WebsitePolicies/#privacy"
+  WCP_TERMS_URL                 = "https://www.fda.gov/AboutFDA/AboutThisWebsite/WebsitePolicies/"
+}
 
 # URL Path used for wcp server health check - e.g. "/mystudies_images/"
 wcp_target_group_path = "/mystudies_images/"
