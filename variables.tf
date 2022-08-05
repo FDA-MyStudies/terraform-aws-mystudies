@@ -181,8 +181,13 @@ variable "appserver_instance_type" {
   description = "Ec2 Instance type used for appserver deployment"
 }
 
+variable "rds_instance_type" {
+  type        = string
+  default     = "db.t4g.small"
+  description = "RDS Instance type used for RDS deployment"
+}
 
-// Base Domain used by applications to look-up hosted zone and make DNS records
+# Base Domain used by applications to look-up hosted zone and make DNS records
 variable "base_domain" {
   default     = "lkpoc.labkey.com" //Development domain
   description = "A domain name for which the certificate should be issued"
@@ -252,6 +257,13 @@ variable "use_common_rds_subnet_group" {
   default     = false
   description = "Bool to determine use of shared RDS subnet group "
 }
+
+variable "response_depends_on" {
+  type        = any
+  description = "A list of resources the Response server post_deploy depends on. e.g RDS database."
+  default     = []
+}
+
 
 variable "response_use_rds" {
   type        = bool
