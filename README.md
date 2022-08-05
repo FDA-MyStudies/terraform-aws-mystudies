@@ -269,6 +269,7 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="input_private_key_path"></a> [private\_key\_path](#input\_private\_key\_path) | Local path to private keys used for provisioning instances | `string` | n/a | yes |
 | <a name="input_private_subnets"></a> [private\_subnets](#input\_private\_subnets) | list of private subnets to use when creating vpc | `list(string)` | n/a | yes |
 | <a name="input_public_subnets"></a> [public\_subnets](#input\_public\_subnets) | list of public subnets to use when creating vpc | `list(string)` | n/a | yes |
+| <a name="input_rds_instance_type"></a> [rds\_instance\_type](#input\_rds\_instance\_type) | RDS Instance type used for RDS deployment | `string` | `"db.t4g.small"` | no |
 | <a name="input_region"></a> [region](#input\_region) | n/a | `string` | `"us-west-2"` | no |
 | <a name="input_registration_create_ec2"></a> [registration\_create\_ec2](#input\_registration\_create\_ec2) | Bool to determine if we should create Registration Ec2 instance. - Used primarily for staged deployment or troubleshooting. | `bool` | `true` | no |
 | <a name="input_registration_ebs_data_snapshot_identifier"></a> [registration\_ebs\_data\_snapshot\_identifier](#input\_registration\_ebs\_data\_snapshot\_identifier) | Snapshot Id to create the Registration Server ebs data volume from | `string` | `null` | no |
@@ -278,6 +279,7 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="input_registration_target_group_path"></a> [registration\_target\_group\_path](#input\_registration\_target\_group\_path) | Path used for healthcheck on Registration Server | `string` | `"/"` | no |
 | <a name="input_registration_use_rds"></a> [registration\_use\_rds](#input\_registration\_use\_rds) | Bool to determine use of RDS for Registration Server Database | `bool` | `false` | no |
 | <a name="input_response_create_ec2"></a> [response\_create\_ec2](#input\_response\_create\_ec2) | Bool to determine if we should create Response Ec2 instance. - Used primarily for staged deployment or troubleshooting. | `bool` | `true` | no |
+| <a name="input_response_depends_on"></a> [response\_depends\_on](#input\_response\_depends\_on) | A list of resources the Response server post\_deploy depends on. e.g RDS database. | `any` | `[]` | no |
 | <a name="input_response_ebs_data_snapshot_identifier"></a> [response\_ebs\_data\_snapshot\_identifier](#input\_response\_ebs\_data\_snapshot\_identifier) | Snapshot Id to create the Response Server ebs data volume from | `string` | `null` | no |
 | <a name="input_response_ebs_size"></a> [response\_ebs\_size](#input\_response\_ebs\_size) | Response Server EBS data volume size | `string` | `null` | no |
 | <a name="input_response_env_data"></a> [response\_env\_data](#input\_response\_env\_data) | Response Server Environment data content - used to pass in installation env settings | `map(string)` | `{}` | no |
@@ -320,6 +322,7 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="output_bastion_ssh_user"></a> [bastion\_ssh\_user](#output\_bastion\_ssh\_user) | Default Username to ssh to bastion instance |
 | <a name="output_distinct_domain_names"></a> [distinct\_domain\_names](#output\_distinct\_domain\_names) | List of distinct domains names used for the validation. |
 | <a name="output_igw_id"></a> [igw\_id](#output\_igw\_id) | Internet gateway ID of the deployed VPC |
+| <a name="output_registration_db_address"></a> [registration\_db\_address](#output\_registration\_db\_address) | The hostname of the Registration RDS instance |
 | <a name="output_registration_db_az"></a> [registration\_db\_az](#output\_registration\_db\_az) | Availability zone of Registration RDS database instance |
 | <a name="output_registration_db_id"></a> [registration\_db\_id](#output\_registration\_db\_id) | ID of Registration RDS database instance |
 | <a name="output_registration_db_password"></a> [registration\_db\_password](#output\_registration\_db\_password) | n/a |
@@ -330,6 +333,7 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="output_registration_private_ip"></a> [registration\_private\_ip](#output\_registration\_private\_ip) | Private IP of the Registration instance |
 | <a name="output_registration_rds_master_pass"></a> [registration\_rds\_master\_pass](#output\_registration\_rds\_master\_pass) | n/a |
 | <a name="output_registration_url"></a> [registration\_url](#output\_registration\_url) | Registration Server URL |
+| <a name="output_response_db_address"></a> [response\_db\_address](#output\_response\_db\_address) | The hostname of the Response RDS instance |
 | <a name="output_response_db_az"></a> [response\_db\_az](#output\_response\_db\_az) | Availability zone of Response RDS database instance |
 | <a name="output_response_db_id"></a> [response\_db\_id](#output\_response\_db\_id) | ID of Response RDS database instance |
 | <a name="output_response_db_password"></a> [response\_db\_password](#output\_response\_db\_password) | n/a |
@@ -346,6 +350,7 @@ Terraform module to create and configure the "backend" components of the FDA MyS
 | <a name="output_vpc_arn"></a> [vpc\_arn](#output\_vpc\_arn) | ARN of the deployed VPC |
 | <a name="output_vpc_cidr"></a> [vpc\_cidr](#output\_vpc\_cidr) | CIDR of the deployed VPC |
 | <a name="output_vpc_id"></a> [vpc\_id](#output\_vpc\_id) | ID of the deployed VPC |
+| <a name="output_wcp_db_address"></a> [wcp\_db\_address](#output\_wcp\_db\_address) | The hostname of the WCP RDS instance |
 | <a name="output_wcp_db_az"></a> [wcp\_db\_az](#output\_wcp\_db\_az) | Availability zone of WCP RDS database instance |
 | <a name="output_wcp_db_id"></a> [wcp\_db\_id](#output\_wcp\_db\_id) | ID of WCP RDS database instance |
 | <a name="output_wcp_db_password"></a> [wcp\_db\_password](#output\_wcp\_db\_password) | n/a |
