@@ -275,7 +275,7 @@ output "wcp_fqdn" {
 }
 
 output "wcp_url" {
-  value       = "https://${element(concat(aws_route53_record.wcp_alias_route.*.fqdn, [""]), 0)}"
+  value       = "https://${element(concat(aws_route53_record.wcp_alias_route.*.fqdn, [""]), 0)}/fdahpStudyDesigner/login.do"
   description = "WCP Server URL"
 }
 
