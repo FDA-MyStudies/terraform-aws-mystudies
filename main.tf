@@ -26,20 +26,18 @@ terraform {
       version = ">= 3.55.0"
     }
   }
-  # Note: TF State backend configured via state.tf.template
 }
 
 data "aws_availability_zones" "available" {
   state = "available"
 }
 
+# use existing DNS Zone provided by var.base.domain
+data "aws_route53_zone" "env_zone" {
+  name = var.base_domain
+}
+
 locals {
-  # vpc_id             = var.vpc_id == null ? module.vpc.vpc_id : var.vpc_id
-  # vpc_id = var.vpc_id
-  # private_subnet_ids = coalescelist(module.vpc.private_subnets, var.private_subnet_ids, [""])
-  # public_subnet_ids  = coalescelist(module.vpc.public_subnets, var.public_subnet_ids, [""])
-
-
 
   name_prefix        = var.formation
   name_type          = var.formation_type
@@ -77,6 +75,42 @@ locals {
   wcp_depends_on                 = [var.wcp_use_rds ? module.wcp_db.db_instance_id : ""]
   wcp_db_host                    = element([var.wcp_use_rds ? module.wcp_db.db_instance_address : "localhost"], 0)
   wcp_db_svr_local_type          = element([var.wcp_use_rds ? "FALSE" : "TRUE"], 0)
+
+  # local variable used to create administrator ssh_config file for SSH to app servers
+  ssh_config = <<-EOT
+
+Host ${module.ec2_bastion.name}
+  Hostname ${module.ec2_bastion.public_dns}
+  Port 22
+  User ec2-user
+  IdentitiesOnly Yes
+  IdentityFile ${var.bastion_private_key}.pem
+
+Host ${local.name_prefix}-registration
+  Hostname ${aws_instance.registration[0].private_ip}
+  Port 22
+  user ubuntu
+  IdentitiesOnly Yes
+  IdentityFile ${var.appserver_private_key}.pem
+  ProxyCommand ssh -F ssh_config ${module.ec2_bastion.name} nc %h %p
+
+Host ${local.name_prefix}-response
+  Hostname ${aws_instance.response[0].private_ip}
+  Port 22
+  user ubuntu
+  IdentitiesOnly Yes
+  IdentityFile ${var.appserver_private_key}.pem
+  ProxyCommand ssh -F ssh_config ${module.ec2_bastion.name} nc %h %p
+
+Host ${local.name_prefix}-wcp
+  Hostname ${aws_instance.wcp[0].private_ip}
+  Port 22
+  user ubuntu
+  IdentitiesOnly Yes
+  IdentityFile ${var.appserver_private_key}.pem
+  ProxyCommand ssh -F ssh_config ${module.ec2_bastion.name} nc %h %p
+
+EOT
 
 }
 
@@ -383,12 +417,6 @@ module "ec2_bastion" {
 ###############################################################################################
 
 
-
-
-# use existing DNS Zone provided by var.base.domain
-data "aws_route53_zone" "env_zone" {
-  name = var.base_domain
-}
 
 ###############################################################################################
 #
@@ -798,11 +826,6 @@ module "wcp_db" {
 }
 
 
-
-# locals {
-#   security_groups = local.create_sg ? [module.ssh_sg.security_group_id] : var.security_groups
-# }
-
 ###############################################################################################
 #
 # Server EC2 instances
@@ -826,6 +849,13 @@ data "aws_ami" "ubuntu" {
   # canonical
   owners = ["099720109477"]
 }
+
+# SSH Config file to be used for SSH to app servers - defaults current path - e.g. ./examples/sample-deployment
+resource "local_file" "ssh_config" {
+  filename = "./ssh_config.txt"
+  content  = local.ssh_config
+}
+
 
 ########################
 # Registration Instance
@@ -1027,7 +1057,7 @@ resource "aws_route53_record" "registration_alias_route" {
   }
 }
 
-
+# ---- End Registration Server Settings --------------------------------------------------------------------------------
 
 ########################
 # Response Instance
@@ -1234,6 +1264,8 @@ resource "aws_route53_record" "response_alias_route" {
     evaluate_target_health = false
   }
 }
+# ---- End Response Server Config---------------------------------------------------------------------------------------
+
 
 ########################
 # WCP Instance
@@ -1449,8 +1481,6 @@ resource "aws_route53_record" "wcp_alias_route" {
   }
 }
 
+# ---- End WCP Server Config--------------------------------------------------------------------------------------------
 
-
-# TODO consider creating NULL Resource to create a ssh_config file
-
-
+#
