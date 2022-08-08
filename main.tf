@@ -65,6 +65,19 @@ locals {
 
   instance_type = var.appserver_instance_type
 
+  # If using RDS update the corresponding depends_on list to include the rds instance so appserver deployment can proceed
+  # once the rds instance is deployed - otherwise Terraform would deploy appserver before RDS instance and applications would
+  # fail to start.
+  registration_depends_on        = [var.registration_use_rds ? module.registration_db.db_instance_id : ""]
+  registration_db_host           = element([var.registration_use_rds ? module.registration_db.db_instance_address : "localhost"], 0)
+  registration_db_svr_local_type = element([var.registration_use_rds ? "FALSE" : "TRUE"], 0)
+  response_depends_on            = [var.response_use_rds ? module.response_db.db_instance_id : ""]
+  response_db_host               = element([var.response_use_rds ? module.response_db.db_instance_address : "localhost"], 0)
+  response_db_svr_local_type     = element([var.response_use_rds ? "FALSE" : "TRUE"], 0)
+  wcp_depends_on                 = [var.wcp_use_rds ? module.wcp_db.db_instance_id : ""]
+  wcp_db_host                    = element([var.wcp_use_rds ? module.wcp_db.db_instance_address : "localhost"], 0)
+  wcp_db_svr_local_type          = element([var.wcp_use_rds ? "FALSE" : "TRUE"], 0)
+
 }
 
 ###############################################################################################
@@ -667,12 +680,13 @@ module "response_db" {
   create_db_option_group    = false
   create_db_parameter_group = false
   create_db_subnet_group    = false
+  create_random_password    = false # required when you provide your own password
   db_subnet_group_name      = module.common_db_subnet_group.db_subnet_group_id
   engine                    = "postgres"
-  engine_version            = "11.12"
-  family                    = "postgres11" # DB parameter group
-  major_engine_version      = "11"         # DB option group
-  instance_class            = "db.t3.medium"
+  engine_version            = "12.11"
+  family                    = "postgres12" # DB parameter group
+  major_engine_version      = "12"         # DB option group
+  instance_class            = var.rds_instance_type
   snapshot_identifier       = var.response_snapshot_identifier
 
   allocated_storage = 32
@@ -709,12 +723,13 @@ module "registration_db" {
   create_db_option_group    = false
   create_db_parameter_group = false
   create_db_subnet_group    = false
+  create_random_password    = false # required when you provide your own password
   db_subnet_group_name      = module.common_db_subnet_group.db_subnet_group_id
   engine                    = "postgres"
-  engine_version            = "11.12"
-  family                    = "postgres11" # DB parameter group
-  major_engine_version      = "11"         # DB option group
-  instance_class            = "db.t3.medium"
+  engine_version            = "12.11"
+  family                    = "postgres12" # DB parameter group
+  major_engine_version      = "12"         # DB option group
+  instance_class            = var.rds_instance_type
   snapshot_identifier       = var.registration_snapshot_identifier
 
   allocated_storage = 32
@@ -751,12 +766,13 @@ module "wcp_db" {
   create_db_option_group    = false
   create_db_parameter_group = false
   create_db_subnet_group    = false
+  create_random_password    = false # required when you provide your own password
   db_subnet_group_name      = module.common_db_subnet_group.db_subnet_group_id
   engine                    = "mysql"
-  engine_version            = "8.0.25"
+  engine_version            = "8.0.28"
   family                    = "mysql8.0" # DB parameter group
   major_engine_version      = "8.0"      # DB option group
-  instance_class            = "db.t3.medium"
+  instance_class            = var.rds_instance_type
   snapshot_identifier       = var.wcp_snapshot_identifier
 
   allocated_storage = 32
@@ -896,7 +912,8 @@ resource "aws_volume_attachment" "registration_ebs_vol_attachment" {
 }
 
 resource "null_resource" "registration_post_deploy_provisioner" {
-  count = var.registration_create_ec2 ? 1 : 0
+  count      = var.registration_create_ec2 ? 1 : 0
+  depends_on = [local.registration_depends_on]
   triggers = {
     appserver = aws_instance.registration[0].id
   }
@@ -932,8 +949,11 @@ resource "null_resource" "registration_post_deploy_provisioner" {
               LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
               LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
               LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
+              POSTGRES_HOST                                    = local.registration_db_host
               POSTGRES_PASSWORD                                = nonsensitive(aws_ssm_parameter.registration_database_password.value)
-              POSTGRES_SVR_LOCAL                               = "TRUE"
+              POSTGRES_REMOTE_ADMIN_PASSWORD                   = nonsensitive(aws_ssm_parameter.registration_rds_master_pass.value)
+              POSTGRES_REMOTE_ADMIN_USER                       = "postgres_admin"
+              POSTGRES_SVR_LOCAL                               = local.registration_db_svr_local_type
               TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
               TOMCAT_INSTALL_TYPE                              = "Standard"
               TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
@@ -1098,7 +1118,8 @@ resource "aws_volume_attachment" "response_ebs_vol_attachment" {
 #
 
 resource "null_resource" "response_post_deploy_provisioner" {
-  count = var.response_create_ec2 ? 1 : 0
+  count      = var.response_create_ec2 ? 1 : 0
+  depends_on = [local.response_depends_on]
   triggers = {
     appserver = aws_instance.response[0].id
   }
@@ -1135,7 +1156,11 @@ resource "null_resource" "response_post_deploy_provisioner" {
               LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
               LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
               LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
+              POSTGRES_HOST                                    = local.response_db_host
               POSTGRES_PASSWORD                                = nonsensitive(aws_ssm_parameter.response_database_password.value)
+              POSTGRES_REMOTE_ADMIN_PASSWORD                   = nonsensitive(aws_ssm_parameter.response_rds_master_pass.value)
+              POSTGRES_REMOTE_ADMIN_USER                       = "postgres_admin"
+              POSTGRES_SVR_LOCAL                               = local.response_db_svr_local_type
               TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"
               TOMCAT_INSTALL_TYPE                              = "Standard"
               TOMCAT_USE_PRIVILEGED_PORTS                      = "TRUE"
@@ -1298,7 +1323,8 @@ resource "aws_volume_attachment" "wcp_ebs_vol_attachment" {
 #
 
 resource "null_resource" "wcp_post_deploy_provisioner" {
-  count = var.wcp_create_ec2 ? 1 : 0
+  count      = var.wcp_create_ec2 ? 1 : 0
+  depends_on = [local.wcp_depends_on]
   triggers = {
     appserver = aws_instance.wcp[0].id
   }
@@ -1336,8 +1362,13 @@ resource "null_resource" "wcp_post_deploy_provisioner" {
               LABKEY_INSTALL_SKIP_TOMCAT_SERVICE_EMBEDDED_STEP = "1"
               LABKEY_LOG_DIR                                   = "/labkey/apps/tomcat/logs"
               LABKEY_STARTUP_DIR                               = "/labkey/labkey/startup"
+              MYSQL_HOST                                       = local.wcp_db_host
               MYSQL_PASSWORD                                   = nonsensitive(aws_ssm_parameter.wcp_database_password.value)
+              MYSQL_PROVISION_REMOTE_DB                        = "TRUE"
+              MYSQL_REMOTE_ADMIN_USER                          = "mysql_admin"
+              MYSQL_REMOTE_ADMIN_PASSWORD                      = nonsensitive(aws_ssm_parameter.wcp_rds_master_pass.value)
               MYSQL_ROOT_PASSWORD                              = nonsensitive(aws_ssm_parameter.wcp_rds_master_pass.value)
+              MYSQL_SVR_LOCAL                                  = local.wcp_db_svr_local_type
               SMTP_HOST                                        = "localhost"
               SMTP_PORT                                        = "25"
               TOMCAT_INSTALL_HOME                              = "/labkey/apps/tomcat"

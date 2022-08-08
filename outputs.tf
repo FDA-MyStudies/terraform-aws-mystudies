@@ -204,6 +204,11 @@ output "registration_mek" {
   sensitive = true
 }
 
+output "response_db_address" {
+  value       = module.response_db.db_instance_address
+  description = "The hostname of the Response RDS instance"
+}
+
 output "response_db_id" {
   value       = module.response_db.db_instance_id
   description = "ID of Response RDS database instance"
@@ -217,6 +222,11 @@ output "response_db_az" {
 output "response_db_sg_id" {
   value       = module.response_psql_sg.security_group_id
   description = "Security group ID of Response RDS database instance"
+}
+
+output "registration_db_address" {
+  value       = module.registration_db.db_instance_address
+  description = "The hostname of the Registration RDS instance"
 }
 
 output "registration_db_id" {
@@ -237,6 +247,11 @@ output "registration_db_sg_id" {
 output "wcp_rds_master_pass" {
   value     = random_password.wcp_rds_master_pass.result
   sensitive = true
+}
+
+output "wcp_db_address" {
+  value       = module.wcp_db.db_instance_address
+  description = "The hostname of the WCP RDS instance"
 }
 
 output "wcp_db_id" {

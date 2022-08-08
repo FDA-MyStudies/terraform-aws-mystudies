@@ -1,4 +1,6 @@
 
+debug = false
+
 base_domain = "dev.labkey.name"
 
 # Set to true to create ACM TLS/TLS Cent for base_domain - Set to False to disable cert
@@ -40,22 +42,34 @@ bastion_enabled = "true"
 
 bastion_instance_type = "t3a.nano"
 
-# Applies latest linux patches and installs ncat which is used to allow ssh through bastion instance to target instance
+rds_instance_type = "db.t4g.small"
+
+# Bastion initial startup tasks - Applies latest linux patches and installs ncat which is used to allow ssh through bastion instance to target instance
 bastion_user_data = [
   "yum update -y && yum install -y nmap-ncat"
 ]
 
-
+# Tags included in all resources
 common_tags = {
   Client = "labkey"
 }
 
-s3_state_bucket = "tf.syseng.labkey.com"
+# Use Common RDS Subnet Group for RDS instances
+use_common_rds_subnet_group = true
 
-s3_state_region = "us-west-2"
+# TODO remove since not needed for non-lkcli deployments
+#s3_state_bucket = "tf.syseng.labkey.com"
+#s3_state_region = "us-west-2"
+
+#
+# ---- Response Server Settings ---------------------------------------------------------------------------------------
+#
 
 # Deploy Response EC2 Instance
 response_create_ec2 = true
+
+# Deploy Response RDS DB Instance
+response_use_rds = true
 
 # Set to null to disable response server ebs data volume - otherwise enter a value in GB
 response_ebs_size = "16"
@@ -64,24 +78,27 @@ response_ebs_size = "16"
 response_ebs_data_snapshot_identifier = ""
 
 response_env_data = {
-  LABKEY_COMPANY_NAME       = "LabKey"
-  LABKEY_DISTRIBUTION       = "community"
-  LABKEY_DIST_FILENAME      = "LabKey22.3.4-6-community.tar.gz"
-  LABKEY_DIST_URL           = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
-  LABKEY_SYSTEM_DESCRIPTION = "MyStudies Response Server"
-  LABKEY_VERSION            = "22.3.4"
-  POSTGRES_SVR_LOCAL        = "TRUE"
-  TOMCAT_VERSION            = "9.0.65"
+  LABKEY_COMPANY_NAME          = "LabKey"
+  LABKEY_DISTRIBUTION          = "community"
+  LABKEY_DIST_FILENAME         = "LabKey22.3.4-6-community.tar.gz"
+  LABKEY_DIST_URL              = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
+  LABKEY_SYSTEM_DESCRIPTION    = "MyStudies Response Server"
+  LABKEY_VERSION               = "22.3.4"
+  POSTGRES_PROVISION_REMOTE_DB = "TRUE"
+  TOMCAT_VERSION               = "9.0.65"
 }
 
-#response_target_group_path =""
 
 
-# Deploy Response RDS DB Instance
-response_use_rds = false
+#
+# ---- Registration Server Settings -----------------------------------------------------------------------------------
+#
 
 # Deploy Registration EC2 Instance
 registration_create_ec2 = true
+
+# Deploy Registration RDS DB Instance
+registration_use_rds = true
 
 # Set to null to disable registration server ebs data volume - otherwise enter a value in GB
 registration_ebs_size = "16"
@@ -90,24 +107,26 @@ registration_ebs_size = "16"
 registration_ebs_data_snapshot_identifier = ""
 
 registration_env_data = {
-  LABKEY_COMPANY_NAME       = "LabKey"
-  LABKEY_DISTRIBUTION       = "community"
-  LABKEY_DIST_FILENAME      = "LabKey22.3.4-6-community.tar.gz"
-  LABKEY_DIST_URL           = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
-  LABKEY_SYSTEM_DESCRIPTION = "MyStudies Registration Server"
-  LABKEY_VERSION            = "22.3.4"
-  TOMCAT_VERSION            = "9.0.65"
+  LABKEY_COMPANY_NAME          = "LabKey"
+  LABKEY_DISTRIBUTION          = "community"
+  LABKEY_DIST_FILENAME         = "LabKey22.3.4-6-community.tar.gz"
+  LABKEY_DIST_URL              = "https://lk-binaries.s3.us-west-2.amazonaws.com/downloads/release/community/22.3.4/LabKey22.3.4-6-community.tar.gz"
+  LABKEY_SYSTEM_DESCRIPTION    = "MyStudies Registration Server"
+  LABKEY_VERSION               = "22.3.4"
+  POSTGRES_PROVISION_REMOTE_DB = "TRUE"
+  TOMCAT_VERSION               = "9.0.65"
 }
 
-# Deploy Registration RDS DB Instance
-registration_use_rds = false
 
+#
+# ---- WCP Server Settings --------------------------------------------------------------------------------------------
+#
 
 # Deploy WCP EC2 Instance
 wcp_create_ec2 = true
 
 # Deploy WCP RDS DB Instance
-wcp_use_rds = false
+wcp_use_rds = true
 
 # Snapshot ID used as source for wcp RDS Database - Null = empty database
 wcp_snapshot_identifier = ""
@@ -120,7 +139,6 @@ wcp_ebs_size = "16"
 
 wcp_env_data = {
   LABKEY_COMPANY_NAME           = "LabKey"
-  MYSQL_SVR_LOCAL               = "TRUE"
   TOMCAT_VERSION                = "9.0.65"
   WCP_ADMIN_EMAIL               = "donotreply@domain.com"
   WCP_ADMIN_EMAIL               = "donotreply@domain.com"
@@ -141,7 +159,4 @@ wcp_env_data = {
 # URL Path used for wcp server health check - e.g. "/mystudies_images/"
 wcp_target_group_path = "/mystudies_images/"
 
-# Use Common RDS Subnet Group for RDS instances
-use_common_rds_subnet_group = true
-
-debug = false
+# --- end of configuration ---
