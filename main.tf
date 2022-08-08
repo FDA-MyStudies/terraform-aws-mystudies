@@ -26,8 +26,6 @@ terraform {
       version = ">= 3.55.0"
     }
   }
-  # Note: TF State backend configured via state.tf.template
-}
 
 data "aws_availability_zones" "available" {
   state = "available"
@@ -77,6 +75,42 @@ locals {
   wcp_depends_on                 = [var.wcp_use_rds ? module.wcp_db.db_instance_id : ""]
   wcp_db_host                    = element([var.wcp_use_rds ? module.wcp_db.db_instance_address : "localhost"], 0)
   wcp_db_svr_local_type          = element([var.wcp_use_rds ? "FALSE" : "TRUE"], 0)
+
+  # local variable used to create administrator ssh_config file for SSH to app servers
+  ssh_config = <<-EOT
+
+Host ${module.ec2_bastion.name}
+  Hostname ${module.ec2_bastion.public_dns}
+  Port 22
+  User ec2-user
+  IdentitiesOnly Yes
+  IdentityFile ${var.bastion_private_key}.pem
+
+Host ${local.name_prefix}-registration
+  Hostname ${aws_instance.registration[0].private_ip}
+  Port 22
+  user ubuntu
+  IdentitiesOnly Yes
+  IdentityFile ${var.appserver_private_key}.pem
+  ProxyCommand ssh -F ssh_config ${module.ec2_bastion.name} nc %h %p
+
+Host ${local.name_prefix}-response
+  Hostname ${aws_instance.response[0].private_ip}
+  Port 22
+  user ubuntu
+  IdentitiesOnly Yes
+  IdentityFile ${var.appserver_private_key}.pem
+  ProxyCommand ssh -F ssh_config ${module.ec2_bastion.name} nc %h %p
+
+Host ${local.name_prefix}-wcp
+  Hostname ${aws_instance.wcp[0].private_ip}
+  Port 22
+  user ubuntu
+  IdentitiesOnly Yes
+  IdentityFile ${var.appserver_private_key}.pem
+  ProxyCommand ssh -F ssh_config ${module.ec2_bastion.name} nc %h %p
+
+EOT
 
 }
 
@@ -1449,8 +1483,10 @@ resource "aws_route53_record" "wcp_alias_route" {
   }
 }
 
+# SSH Config file to be used for SSH to app servers - defaults current path - e.g. ./examples/sample-deployment
+resource "local_file" "ssh_config" {
+  filename = "./ssh_config.txt"
+  content  = local.ssh_config
+}
 
-
-# TODO consider creating NULL Resource to create a ssh_config file
-
-
+#
