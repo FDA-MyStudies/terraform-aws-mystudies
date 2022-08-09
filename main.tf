@@ -92,7 +92,7 @@ Host ${local.name_prefix}-registration
   user ubuntu
   IdentitiesOnly Yes
   IdentityFile ${var.appserver_private_key}.pem
-  ProxyCommand ssh -F ssh_config ${module.ec2_bastion.name} nc %h %p
+  ProxyCommand ssh -F ssh_config.txt ${module.ec2_bastion.name} nc %h %p
 
 Host ${local.name_prefix}-response
   Hostname ${aws_instance.response[0].private_ip}
@@ -100,7 +100,7 @@ Host ${local.name_prefix}-response
   user ubuntu
   IdentitiesOnly Yes
   IdentityFile ${var.appserver_private_key}.pem
-  ProxyCommand ssh -F ssh_config ${module.ec2_bastion.name} nc %h %p
+  ProxyCommand ssh -F ssh_config.txt ${module.ec2_bastion.name} nc %h %p
 
 Host ${local.name_prefix}-wcp
   Hostname ${aws_instance.wcp[0].private_ip}
@@ -108,7 +108,7 @@ Host ${local.name_prefix}-wcp
   user ubuntu
   IdentitiesOnly Yes
   IdentityFile ${var.appserver_private_key}.pem
-  ProxyCommand ssh -F ssh_config ${module.ec2_bastion.name} nc %h %p
+  ProxyCommand ssh -F ssh_config.txt ${module.ec2_bastion.name} nc %h %p
 
 EOT
 
