@@ -1,6 +1,46 @@
 # FDA MyStudies Terraform Module
 
-Sample deployment of this MyStudies module.
+This example will deploy a functional MyStudies Environment in AWS using the MyStudies Terraform Module with the following features:
+ - VPC
+ - Bastion Host
+ - Application Load Balancer
+ - TLS/SSL Certificate
+ - Route 53 DNS Domain Records
+ - Secrets Management
+ - Security Groups
+ - Registration Application Server
+ - Registration Database Server
+ - Response Application Server
+ - Response Database Server
+ - WCP Application Server
+ - WCP Database Server
+
+ ## Quick Start - How to get started with deployment
+
+### Prerequisites
+ - AWS Account
+ - AWS IAM User Account with appropriate permissions to deploy AWS resources
+ - Administrator computer configured with AWS credentials and [Terraform 1.2.x](https://www.terraform.io/downloads)  installed
+ - An existing Route53 DNS domain configured in the target AWS account
+ - At least one New or existing [AWS Ec2 Key Pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html) two recommended - one for bastion host and one for application servers  
+
+### Quick Start deployment steps
+1. Clone this repo to an administrator computer
+   `git clone https://github.com/LabKey/terraform-aws-mystudies.git`
+2. CD to the examples/sample-deployment directory
+    ` cd ./terraform-aws-mystudies/examples/sample-deployment`
+3. Review and edit the `terraform.tfvars` configuration file - configuring appropriate values (e.g domain name, key pairs etc.)
+4. Deploy the infrastructure with terraform
+
+    `terraform init`
+ 
+    `terraform plan`
+
+    `terraform apply`
+
+5. Terraform will deploy the required resources and application servers will start the applications. 
+The system is now ready for administrators to complete the initial configuration and setup. [For information on how to complete initial setup follow this guide](https://www.labkey.org/FDAMyStudiesHelp/wiki-page.view?name=fdaDocs)   
+
 
 <!-- markdownlint-disable -->
 <!--- BEGIN_TF_DOCS --->
