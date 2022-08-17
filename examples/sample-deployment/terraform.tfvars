@@ -38,8 +38,6 @@ formation = "mystudies"
 
 formation_type = "dev"
 
-bastion_enabled = "true"
-
 bastion_instance_type = "t3a.nano"
 
 rds_instance_type = "db.t4g.small"
@@ -56,39 +54,6 @@ common_tags = {
 
 # Use Common RDS Subnet Group for RDS instances
 use_common_rds_subnet_group = true
-
-# TODO remove since not needed for non-lkcli deployments
-#s3_state_bucket = "tf.syseng.labkey.com"
-#s3_state_region = "us-west-2"
-
-#
-# ---- Response Server Settings ---------------------------------------------------------------------------------------
-#
-
-# Deploy Response EC2 Instance
-response_create_ec2 = true
-
-# Deploy Response RDS DB Instance
-response_use_rds = true
-
-# Set to null to disable response server ebs data volume - otherwise enter a value in GB
-response_ebs_size = "16"
-
-# Snapshot ID used as source for response ebs data volume - Null = empty volume
-response_ebs_data_snapshot_identifier = ""
-
-response_env_data = {
-  LABKEY_COMPANY_NAME          = "LabKey"
-  LABKEY_DISTRIBUTION          = "community"
-  LABKEY_DIST_FILENAME         = "LabKey22.7.1-1-response.tar.gz"
-  LABKEY_DIST_URL              = "https://lk-binaries.s3-us-west-2.amazonaws.com/downloads/release/response/22.7.1/LabKey22.7.1-1-response.tar.gz"
-  LABKEY_SYSTEM_DESCRIPTION    = "MyStudies Response Server"
-  LABKEY_VERSION               = "22.7.1"
-  POSTGRES_PROVISION_REMOTE_DB = "TRUE"
-  TOMCAT_VERSION               = "9.0.65"
-}
-
-
 
 #
 # ---- Registration Server Settings -----------------------------------------------------------------------------------
@@ -117,6 +82,32 @@ registration_env_data = {
   TOMCAT_VERSION               = "9.0.65"
 }
 
+#
+# ---- Response Server Settings ---------------------------------------------------------------------------------------
+#
+
+# Deploy Response EC2 Instance
+response_create_ec2 = true
+
+# Deploy Response RDS DB Instance
+response_use_rds = true
+
+# Set to null to disable response server ebs data volume - otherwise enter a value in GB
+response_ebs_size = "16"
+
+# Snapshot ID used as source for response ebs data volume - Null = empty volume
+response_ebs_data_snapshot_identifier = ""
+
+response_env_data = {
+  LABKEY_COMPANY_NAME          = "LabKey"
+  LABKEY_DISTRIBUTION          = "community"
+  LABKEY_DIST_FILENAME         = "LabKey22.7.1-1-response.tar.gz"
+  LABKEY_DIST_URL              = "https://lk-binaries.s3-us-west-2.amazonaws.com/downloads/release/response/22.7.1/LabKey22.7.1-1-response.tar.gz"
+  LABKEY_SYSTEM_DESCRIPTION    = "MyStudies Response Server"
+  LABKEY_VERSION               = "22.7.1"
+  POSTGRES_PROVISION_REMOTE_DB = "TRUE"
+  TOMCAT_VERSION               = "9.0.65"
+}
 
 #
 # ---- WCP Server Settings --------------------------------------------------------------------------------------------
