@@ -27,12 +27,6 @@ variable "security_group_ids" {
   default     = []
 }
 
-# variable "vpc_id" {
-#   type        = string
-#   default     = null
-#   description = "id of the vpc within which to create the infrastructure"
-# }
-
 variable "bastion_private_key" {
   type        = string
   description = "Name of private key used to ssh to bastion server"
@@ -43,7 +37,6 @@ variable "appserver_private_key" {
   default     = ""
   description = "Name of private key used to ssh to appserver"
 }
-
 
 variable "private_subnets" {
   type        = list(string)
@@ -59,18 +52,6 @@ variable "public_subnets" {
   type        = list(string)
   description = "list of public subnets to use when creating vpc"
 }
-
-/*
- variable "private_subnet_ids" {
-   type        = list(string)
-   description = "list of private subnet ids to use when creating vpc"
-}
-
- variable "public_subnet_ids" {
-   type        = list(string)
-   description = "list of public subnet ids to use when creating vpc"
-}
-*/
 
 variable "azs" {
   description = "A list of availability zones in the region"
@@ -134,7 +115,7 @@ variable "s3_state_region" {
 
 variable "bastion_enabled" {
   type        = bool
-  default     = null
+  default     = true
   description = "Set to false to prevent the module from creating bastion instance resources"
 }
 
@@ -154,8 +135,6 @@ variable "bastion_user_data" {
   default     = []
   description = "Bastion Instance User data content"
 }
-
-
 
 variable "user" {
   type        = string
@@ -263,7 +242,6 @@ variable "response_depends_on" {
   description = "A list of resources the Response server post_deploy depends on. e.g RDS database."
   default     = []
 }
-
 
 variable "response_use_rds" {
   type        = bool

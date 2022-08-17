@@ -69,12 +69,16 @@ locals {
   registration_depends_on        = [var.registration_use_rds ? module.registration_db.db_instance_id : ""]
   registration_db_host           = element([var.registration_use_rds ? module.registration_db.db_instance_address : "localhost"], 0)
   registration_db_svr_local_type = element([var.registration_use_rds ? "FALSE" : "TRUE"], 0)
+  registration_ip                = element([var.registration_create_ec2 ? aws_instance.registration[0].private_ip : ""], 0)
   response_depends_on            = [var.response_use_rds ? module.response_db.db_instance_id : ""]
   response_db_host               = element([var.response_use_rds ? module.response_db.db_instance_address : "localhost"], 0)
   response_db_svr_local_type     = element([var.response_use_rds ? "FALSE" : "TRUE"], 0)
+  response_ip                    = element([var.response_create_ec2 ? aws_instance.response[0].private_ip : ""], 0)
   wcp_depends_on                 = [var.wcp_use_rds ? module.wcp_db.db_instance_id : ""]
   wcp_db_host                    = element([var.wcp_use_rds ? module.wcp_db.db_instance_address : "localhost"], 0)
   wcp_db_svr_local_type          = element([var.wcp_use_rds ? "FALSE" : "TRUE"], 0)
+  wcp_ip                         = element([var.wcp_create_ec2 ? aws_instance.wcp[0].private_ip : ""], 0)
+
 
   # local variable used to create administrator ssh_config file for SSH to app servers
   ssh_config = <<-EOT
@@ -87,7 +91,7 @@ Host ${module.ec2_bastion.name}
   IdentityFile ${var.bastion_private_key}.pem
 
 Host ${local.name_prefix}-registration
-  Hostname ${aws_instance.registration[0].private_ip}
+  Hostname ${local.registration_ip}
   Port 22
   user ubuntu
   IdentitiesOnly Yes
@@ -95,7 +99,7 @@ Host ${local.name_prefix}-registration
   ProxyCommand ssh -F ssh_config.txt ${module.ec2_bastion.name} nc %h %p
 
 Host ${local.name_prefix}-response
-  Hostname ${aws_instance.response[0].private_ip}
+  Hostname ${local.response_ip}
   Port 22
   user ubuntu
   IdentitiesOnly Yes
@@ -103,7 +107,7 @@ Host ${local.name_prefix}-response
   ProxyCommand ssh -F ssh_config.txt ${module.ec2_bastion.name} nc %h %p
 
 Host ${local.name_prefix}-wcp
-  Hostname ${aws_instance.wcp[0].private_ip}
+  Hostname ${local.wcp_ip}
   Port 22
   user ubuntu
   IdentitiesOnly Yes
@@ -377,9 +381,6 @@ module "appserver_ssh_sg" {
     },
   )
 }
-
-
-
 
 
 ###############################################################################################
