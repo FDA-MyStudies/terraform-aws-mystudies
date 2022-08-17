@@ -19,10 +19,11 @@ This example will deploy a functional MyStudies Environment in AWS using the MyS
 
 ### Prerequisites
  - AWS Account
- - AWS IAM User Account with appropriate permissions to deploy AWS resources
+ - [AWS IAM User Account](https://docs.aws.amazon.com/IAM/latest/UserGuide/getting-started_create-admin-group.html) with appropriate permissions to deploy AWS resources
+ - AWS Access Keys for the IAM User and the administrator workstation configured with the [AWS Access Keys, Profile and ENV variables](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-quickstart.html) 
  - Administrator computer configured with AWS credentials and [Terraform 1.2.x](https://www.terraform.io/downloads)  installed
  - An existing Route53 DNS domain configured in the target AWS account
- - At least one New or existing [AWS Ec2 Key Pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html) two recommended - one for bastion host and one for application servers  
+ - At least one New or existing [AWS EC2 Key Pair](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/create-key-pairs.html) two recommended - one for bastion host and one for application servers  
 
 ### Quick Start deployment steps
 1. Clone this repo to an administrator computer
