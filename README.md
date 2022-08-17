@@ -317,7 +317,7 @@ module "mystudies" {
 | <a name="input_appserver_private_key"></a> [appserver\_private\_key](#input\_appserver\_private\_key) | Name of private key used to ssh to appserver | `string` | `""` | no |
 | <a name="input_azs"></a> [azs](#input\_azs) | A list of availability zones in the region | `list(string)` | `[]` | no |
 | <a name="input_base_domain"></a> [base\_domain](#input\_base\_domain) | A domain name for which the certificate should be issued | `string` | `"lkpoc.labkey.com"` | no |
-| <a name="input_bastion_enabled"></a> [bastion\_enabled](#input\_bastion\_enabled) | Set to false to prevent the module from creating bastion instance resources | `bool` | `null` | no |
+| <a name="input_bastion_enabled"></a> [bastion\_enabled](#input\_bastion\_enabled) | Set to false to prevent the module from creating bastion instance resources | `bool` | `true` | no |
 | <a name="input_bastion_instance_type"></a> [bastion\_instance\_type](#input\_bastion\_instance\_type) | Bastion instance type | `string` | `"t3.micro"` | no |
 | <a name="input_bastion_private_key"></a> [bastion\_private\_key](#input\_bastion\_private\_key) | Name of private key used to ssh to bastion server | `string` | n/a | yes |
 | <a name="input_bastion_user"></a> [bastion\_user](#input\_bastion\_user) | IAM user for logging into the bastion host | `string` | `"ec2-user"` | no |
