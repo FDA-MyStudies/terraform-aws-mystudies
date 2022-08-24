@@ -62,10 +62,13 @@ module "mystudies" {
 ```
 
 
-## Example
+## Example - How to use
+
+For guidance on how to use this module, please see the Sample Deployment configuration that is included in the repo. 
 
 * [Sample Deployment](https://github.com/LabKey/terraform-aws-mystudies/tree/develop/examples/sample-deployment)
 
+Additional documentation about this automation is available at: [FDA MyStudies Infrastructure Deployment Automation](https://www.labkey.org/FDAMyStudiesHelp/wiki-page.view?name=autoDeployment) 
 
 <!-- markdownlint-disable -->
 <!--- BEGIN_TF_DOCS --->

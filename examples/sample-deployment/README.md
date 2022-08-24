@@ -27,7 +27,7 @@ This example will deploy a functional MyStudies Environment in AWS using the MyS
 
 ### Quick Start deployment steps
 1. Clone this repo to an administrator computer
-   `git clone https://github.com/LabKey/terraform-aws-mystudies.git`
+   `git clone https://github.com/FDA-MyStudies/terraform-aws-mystudies.git`
 2. CD to the examples/sample-deployment directory
     ` cd ./terraform-aws-mystudies/examples/sample-deployment`
 3. Review and edit the `terraform.tfvars` configuration file - configuring appropriate values (e.g domain name, key pairs etc.)
@@ -42,6 +42,8 @@ This example will deploy a functional MyStudies Environment in AWS using the MyS
 5. Terraform will deploy the required resources and application servers will start the applications. 
 The system is now ready for administrators to complete the initial configuration and setup. [For information on how to complete initial setup follow this guide](https://www.labkey.org/FDAMyStudiesHelp/wiki-page.view?name=fdaDocs)   
 
+### Additional Documentation 
+Additional documentation about this automation is available at: [FDA MyStudies Infrastructure Deployment Automation](https://www.labkey.org/FDAMyStudiesHelp/wiki-page.view?name=autoDeployment)
 
 <!-- markdownlint-disable -->
 <!--- BEGIN_TF_DOCS --->
