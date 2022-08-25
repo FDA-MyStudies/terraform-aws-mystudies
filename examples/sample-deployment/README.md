@@ -27,7 +27,7 @@ This example will deploy a functional MyStudies Environment in AWS using the MyS
 
 ### Quick Start deployment steps
 1. Clone this repo to an administrator computer
-   `git clone https://github.com/LabKey/terraform-aws-mystudies.git`
+   `git clone https://github.com/FDA-MyStudies/terraform-aws-mystudies.git`
 2. CD to the examples/sample-deployment directory
     ` cd ./terraform-aws-mystudies/examples/sample-deployment`
 3. Review and edit the `terraform.tfvars` configuration file - configuring appropriate values (e.g domain name, key pairs etc.)
@@ -42,6 +42,8 @@ This example will deploy a functional MyStudies Environment in AWS using the MyS
 5. Terraform will deploy the required resources and application servers will start the applications. 
 The system is now ready for administrators to complete the initial configuration and setup. [For information on how to complete initial setup follow this guide](https://www.labkey.org/FDAMyStudiesHelp/wiki-page.view?name=fdaDocs)   
 
+### Additional Documentation 
+Additional documentation about this automation is available at: [FDA MyStudies Infrastructure Deployment Automation](https://www.labkey.org/FDAMyStudiesHelp/wiki-page.view?name=autoDeployment)
 
 <!-- markdownlint-disable -->
 <!--- BEGIN_TF_DOCS --->
@@ -187,7 +189,7 @@ No resources.
 | <a name="input_formation"></a> [formation](#input\_formation) | Name of VPC and associated resources, used in config paths | `any` | n/a | yes |
 | <a name="input_formation_type"></a> [formation\_type](#input\_formation\_type) | production \| development | `any` | n/a | yes |
 | <a name="input_install_script_repo_branch"></a> [install\_script\_repo\_branch](#input\_install\_script\_repo\_branch) | (optional) branch of install script repo to checkout | `string` | `null` | no |
-| <a name="input_install_script_repo_url"></a> [install\_script\_repo\_url](#input\_install\_script\_repo\_url) | url of the install script repo | `string` | `"https://github.com/LabKey/install-script.git"` | no |
+| <a name="input_install_script_repo_url"></a> [install\_script\_repo\_url](#input\_install\_script\_repo\_url) | url of the install script repo | `string` | `"https://github.com/FDA-MyStudies/install-script.git"` | no |
 | <a name="input_office_cidr_A"></a> [office\_cidr\_A](#input\_office\_cidr\_A) | CIDR of authorized office A - used for SSM remote admin access to instances | `string` | `"199.76.89.158/32"` | no |
 | <a name="input_office_cidr_B"></a> [office\_cidr\_B](#input\_office\_cidr\_B) | CIDR of authorized office B - used for SSM remote admin access to instances | `string` | `"199.76.89.152/32"` | no |
 | <a name="input_private_key_path"></a> [private\_key\_path](#input\_private\_key\_path) | Local path to private keys used for provisioning instances | `string` | n/a | yes |

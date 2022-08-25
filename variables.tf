@@ -73,7 +73,7 @@ variable "private_key_path" {
 variable "install_script_repo_url" {
   type        = string
   description = "url of the install script repo"
-  default     = "https://github.com/LabKey/install-script.git"
+  default     = "https://github.com/FDA-MyStudies/install-script.git"
 }
 
 variable "install_script_repo_branch" {
